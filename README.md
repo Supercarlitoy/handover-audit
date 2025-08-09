@@ -5,7 +5,7 @@ Mobile-first, offline-capable PWA to run Level-1 PDSA handover audits (NSQHS Std
 ## Use
 1) Open https://supercarlitoy.github.io/handover-audit/
 2) Install: Safari "Add to Home Screen" / Chrome "Install app".
-3) On iPhone: Safari → Share → Add to Home Screen.
+3) On iPhone/iPad: Safari → Share → Add to Home Screen (no auto-prompt).
 4) Settings: set baseline %, target (85%), cycle dates.
 5) Do one audit per shift (AM/PM/ND). Notes ≤10 words, no identifiers.
 6) Exports: RAW, SUMMARY, CHANGEPOINTS, DEBRIEFS; filenames `SRF_<MMDDYYYY>_<TYPE>.csv`.
