@@ -61,6 +61,8 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .diag{margin-top:10px;border:1px dashed var(--line);padding:10px;border-radius:10px}
 .diag pre{white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:#a7f3d0}
+#preModal[style*="display: none"]{ pointer-events: none !important; opacity: 0 !important; }
+.tabs .tab { pointer-events: auto; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -74,13 +76,13 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </div>
       <div style="flex:1"></div>
       <div class="tabs">
-        <div class="tab active" data-tab="audit">Audit</div>
-        <div class="tab" data-tab="debrief">Debrief</div>
-        <div class="tab" data-tab="summary">Summary</div>
-        <div class="tab" data-tab="changelog">Change Log</div>
-        <div class="tab" data-tab="exports">Exports</div>
-        <div class="tab" data-tab="help">Help</div>
-        <div class="tab" data-tab="settings">Settings</div>
+        <div class="tab active" data-tab="audit"     onclick="showTab('audit')">Audit</div>
+        <div class="tab"         data-tab="debrief"   onclick="showTab('debrief')">Debrief</div>
+        <div class="tab"         data-tab="summary"   onclick="showTab('summary')">Summary</div>
+        <div class="tab"         data-tab="changelog" onclick="showTab('changelog')">Change Log</div>
+        <div class="tab"         data-tab="exports"   onclick="showTab('exports')">Exports</div>
+        <div class="tab"         data-tab="help"      onclick="showTab('help')">Help</div>
+        <div class="tab"         data-tab="settings"  onclick="showTab('settings')">Settings</div>
       </div>
     </div>
   </div>
@@ -444,10 +446,18 @@ if (preShown) { const m = document.getElementById('preModal'); if (m) m.style.di
 function preDismiss(){
   const m = document.getElementById('preModal');
   if (m) m.style.display = 'none';
-  preShown = true;
+  window.preShown = true;
   try { sessionStorage.setItem('preShown','1'); } catch(e) {}
-  showTab('audit');
+  if (typeof showTab === 'function') showTab('audit');
 }
+
+try { window.preShown = sessionStorage.getItem('preShown') === '1'; } catch(e) {}
+if (window.preShown) { const m = document.getElementById('preModal'); if (m) m.style.display = 'none'; }
+
+// Harden event wiring
+document.getElementById('preOk')?.addEventListener('click', preDismiss);
+document.getElementById('preOk')?.addEventListener('touchstart', function(ev){ ev.preventDefault(); preDismiss(); }, {passive:false});
+document.getElementById('preModal')?.addEventListener('click', (e)=>{ if (e.target && e.target.id === 'preModal') preDismiss(); });
 
 // Handle escape key globally
 function handleKeyDown(e) {
@@ -641,9 +651,9 @@ function scheduleEightPMCheck(){ setInterval(async()=>{ if(CFG.reminder!=='On') 
 
 /***** PWA FILES (manifest + service worker) *****/
 const MANIFEST = {name:'Ward Handover Audit', short_name:'Handover Audit', start_url:'./', display:'standalone', background_color:'#0b0f14', theme_color:'#0ea5a6', icons:[{src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', sizes:'192x192', type:'image/svg+xml'}] };
-const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v4').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
+const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v9').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
 self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v4').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v9').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
 
 function installManifest(){
   const link=document.createElement('link'); link.rel='manifest';
@@ -739,6 +749,19 @@ function runSelfTests(){
   // Add global keyboard handler
   document.addEventListener('keydown', handleKeyDown);
 })();
+</script>
+<script>
+window.showTab = function(tab){
+  try {
+    document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    const names = ['audit','debrief','summary','changelog','exports','help','settings'];
+    names.forEach(name => {
+      const el = document.querySelector('[data-view="'+name+'"]') || document.getElementById(name);
+      if (el) el.style.display = (name === tab) ? 'block' : 'none';
+    });
+    if (tab === 'summary' && typeof window.refreshDashboard === 'function') window.refreshDashboard();
+  } catch(e){}
+};
 </script>
 </body>
 </html>
