@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Ward Handover Audit – PDSA (Offline)</title>
+<meta name="theme-color" content="#0ea5a6" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect width='100%25' height='100%25' fill='%230ea5a6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='96' font-family='system-ui' fill='white'%3E✓%3C/text%3E%3C/svg%3E" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none';" />
+<style>
+:root{--bg:#0b0f14;--surface:#0f172a;--muted:#9ca3af;--ink:#e5e7eb;--line:#1f2937;--brand:#0ea5a6;--accent:#22d3ee;--good:#10b981;--warn:#f59e0b;--bad:#ef4444}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(11,15,20,.98),rgba(11,15,20,.85) 70%,rgba(11,15,20,0));border-bottom:1px solid var(--line)}
+.top .wrap{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--accent));display:inline-grid;place-items:center;color:#022}
+.h1{font-size:18px;font-weight:700}
+.ward{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);padding:8px 10px;border-radius:999px;background:#0b1220;color:#a7f3d0;cursor:pointer}
+.tab.active{background:linear-gradient(180deg,var(--accent),var(--brand));color:#062}
+.main{flex:1}
+.wrap{max-width:960px;margin:0 auto;padding:12px 16px}
+.card{background:linear-gradient(180deg,#111827,#0b1220);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 10px 30px #0006}
+.card h2{margin:4px 0 10px;font-size:16px;color:#d1d5db}
+label{display:block;font-size:12px;color:var(--muted);margin:6px 0 4px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
+textarea{min-height:64px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.btn{border:0;border-radius:10px;padding:10px 12px;background:#123;color:#a7f3d0;border:1px solid var(--line);cursor:pointer}
+.btn.primary{background:linear-gradient(180deg,var(--accent),var(--brand));color:#052}
+.btn.ghost{background:#0b1220}
+.btn.warn{background:linear-gradient(180deg,#fca5a5,#ef4444);color:#2a0a0a}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpi{padding:10px;border-radius:10px;border:1px solid var(--line);background:#0b1220}
+.kpi .t{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:22px}
+.statusDot{display:inline-block;width:10px;height:10px;border-radius:50%}
+.good{color:var(--good)}.bad{color:var(--bad)}.muted{color:var(--muted)}
+.grid{display:grid;gap:12px}
+@media(min-width:860px){.grid2{grid-template-columns:1fr 1fr}}
+canvas.run{width:100%!important;height:300px!important;background:#08111e;border:1px solid var(--line);border-radius:10px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#0b1220;font-size:12px;margin-right:6px}
+.help li{margin:6px 0}
+.banner{position:fixed;left:0;right:0;bottom:10px;display:flex;justify-content:center;z-index:50}
+.banner .inner{display:flex;gap:8px;background:#0b1220;border:1px solid var(--line);padding:10px 12px;border-radius:12px;box-shadow:0 8px 24px #0007}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:60}
+.modal .box{width:min(520px,92vw);background:#0f172a;border:1px solid var(--line);border-radius:16px;padding:16px}
+.tip{display:flex;gap:8px;align-items:center;margin:6px 0}
+.tip .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.hr{height:1px;background:var(--line);margin:10px 0}
+.small{font-size:12px;color:var(--muted)}
+.list{display:grid;gap:6px}
+.slot{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#0b1220}
+.slot .name{font-size:13px}
+.slot .state{display:flex;align-items:center;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.diag{margin-top:10px;border:1px dashed var(--line);padding:10px;border-radius:10px}
+.diag pre{white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:#a7f3d0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="wrap">
+      <div class="logo">✓</div>
+      <div>
+        <div class="h1">Ward Handover Audit</div>
+        <div class="ward" id="wardName">Spinal Rehabilitation Ward • 13 Aug–09 Sep 2025</div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="tabs">
+        <div class="tab active" data-tab="audit">Audit</div>
+        <div class="tab" data-tab="debrief">Debrief</div>
+        <div class="tab" data-tab="summary">Summary</div>
+        <div class="tab" data-tab="changelog">Change Log</div>
+        <div class="tab" data-tab="exports">Exports</div>
+        <div class="tab" data-tab="help">Help</div>
+        <div class="tab" data-tab="settings">Settings</div>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="wrap grid grid2">
+      <!-- AUDIT -->
+      <section class="card" data-view="audit">
+        <h2>One Handover = One Audit (≤30s)</h2>
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="a_date" />
+          </div>
+          <div>
+            <label>Shift</label>
+            <select id="a_shift">
+              <option>AM</option><option>PM</option><option>ND</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Observer initials</label>
+            <input id="a_initials" placeholder="e.g., CG" maxlength="6" />
+          </div>
+          <div>
+            <label>Duration (minutes)</label>
+            <input id="a_minutes" type="number" min="0" value="0" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Omissions (count)</label>
+            <input id="a_omissions" type="number" min="0" value="0" />
+          </div>
+          <div>
+            <label>Reason (if not 100%)</label>
+            <select id="a_reason">
+              <option value="">—</option>
+              <option>NoCPV</option>
+              <option>TimePressure</option>
+              <option>Distraction</option>
+              <option>EquipmentIssue</option>
+              <option>StaffingShortage</option>
+              <option>TrainingGap</option>
+              <option>PatientUnavailable</option>
+              <option>CompetingPriority</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <label>Checklist</label>
+        <div class="row">
+          <label><input type="checkbox" id="c_cpv"> CPV used</label>
+          <label><input type="checkbox" id="c_ids"> Two identifiers confirmed</label>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="c_risks"> Risks/issues stated</label>
+          <label><input type="checkbox" id="c_goals"> Rehab goals stated</label>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="c_tasks"> Next-shift tasks in CPV</label>
+        </div>
+        <label>Notes (≤10 words, no names/DOB/MRN)</label>
+        <textarea id="a_notes" maxlength="90" placeholder="e.g., med room delay; pager interruptions"></textarea>
+        <div class="btns">
+          <button class="btn primary" id="saveAudit">Save audit</button>
+          <button class="btn ghost" id="clearForm">Clear</button>
+        </div>
+        <div class="small">Compliance for this handover = (ticks ÷ 5) × 100. Reason required if &lt; 100%.</div>
+      </section>
+
+      <aside class="card" data-view="audit">
+        <h2>Pre‑Shift Reminder</h2>
+        <div class="list small">
+          <div class="tip"><span class="dot"></span> Follow the sampling roster (AM/PM/ND today).</div>
+          <div class="tip"><span class="dot"></span> Watch one handover only — <b>no prompting</b>.</div>
+          <div class="tip"><span class="dot"></span> Tick only what you clearly saw/heard.</div>
+          <div class="tip"><span class="dot"></span> Notes ≤10 words; <b>no names, DOB, MRN</b>.</div>
+          <div class="tip"><span class="dot"></span> Save within 30 seconds.</div>
+        </div>
+        <div class="hr"></div>
+        <h2>Today’s Slots</h2>
+        <div id="todaySlots" class="list"></div>
+      </aside>
+
+      <!-- DEBRIEF -->
+      <section class="card" data-view="debrief" style="display:none">
+        <h2>Debrief (for CPV not used)</h2>
+        <div class="small">Triggered randomly for ~30% of audits where CPV was not used, or open manually here.</div>
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="d_date" />
+          </div>
+          <div>
+            <label>Shift</label>
+            <select id="d_shift"><option>AM</option><option>PM</option><option>ND</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Related Audit (auto)</label>
+            <input id="d_auditId" placeholder="YYYY-MM-DD_SHIFT" readonly />
+          </div>
+          <div>
+            <label>Reason code</label>
+            <select id="d_reason">
+              <option>NoCPV</option>
+              <option>TimePressure</option>
+              <option>Distraction</option>
+              <option>EquipmentIssue</option>
+              <option>StaffingShortage</option>
+              <option>TrainingGap</option>
+              <option>PatientUnavailable</option>
+              <option>CompetingPriority</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <label>Short note (≤10 words, no identifiers)</label>
+        <textarea id="d_note" maxlength="90" placeholder="e.g., pager interruptions; printer down"></textarea>
+        <div class="btns">
+          <button class="btn primary" id="saveDebrief">Save debrief</button>
+          <button class="btn ghost" id="clearDebrief">Clear</button>
+        </div>
+      </section>
+
+      <!-- SUMMARY (run chart + metrics) -->
+      <section class="card" data-view="summary" style="display:none">
+        <h2>Summary</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="t">Today %</div><div class="v" id="k_today">–</div></div>
+          <div class="kpi"><div class="t">This Week %</div><div class="v" id="k_week">–</div></div>
+          <div class="kpi"><div class="t">Median %</div><div class="v" id="k_median">–</div></div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="kpis">
+          <div class="kpi"><div class="t">Avg Omissions (wk)</div><div class="v" id="k_om">–</div></div>
+          <div class="kpi"><div class="t">Avg Minutes (wk)</div><div class="v" id="k_min">–</div></div>
+          <div class="kpi"><div class="t">Weekend Coverage</div><div class="v" id="k_weekend">–</div></div>
+        </div>
+        <div style="height:12px"></div>
+        <canvas id="runChart" class="run"></canvas>
+        <div class="chips" id="signalChips"></div>
+        <div style="height:12px"></div>
+        <div class="kpis">
+          <div class="kpi"><div class="t">Item: CPV</div><div class="v" id="k_item_cpv">–</div></div>
+          <div class="kpi"><div class="t">Item: IDs</div><div class="v" id="k_item_ids">–</div></div>
+          <div class="kpi"><div class="t">Item: Risks</div><div class="v" id="k_item_risks">–</div></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="t">Item: Goals</div><div class="v" id="k_item_goals">–</div></div>
+          <div class="kpi"><div class="t">Item: Tasks</div><div class="v" id="k_item_tasks">–</div></div>
+          <div class="kpi"><div class="t">Records</div><div class="v" id="k_count">0</div></div>
+        </div>
+      </section>
+
+      <!-- CHANGE LOG -->
+      <section class="card" data-view="changelog" style="display:none">
+        <h2>Change Log (operational notes)</h2>
+        <div class="small">Use this to record deviations/issues or when a change started (so we can mark the run chart).</div>
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="cl_date" />
+          </div>
+          <div>
+            <label>Shift</label>
+            <select id="cl_shift"><option>AM</option><option>PM</option><option>ND</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Category</label>
+            <select id="cl_cat"><option>Process</option><option>Equipment</option><option>Staffing</option><option>Policy</option><option>Other</option></select>
+          </div>
+          <div>
+            <label>Label (short)</label>
+            <input id="cl_label" maxlength="32" placeholder="e.g., New SOP v2" />
+          </div>
+        </div>
+        <label>Note (≤15 words)</label>
+        <textarea id="cl_note" maxlength="120" placeholder="e.g., switched to bedside-only IDs; printer outage"></textarea>
+        <div class="btns">
+          <button class="btn primary" id="saveChange">Add entry</button>
+          <button class="btn ghost" id="clearChange">Clear</button>
+        </div>
+        <div class="hr"></div>
+        <div id="cl_list" class="list"></div>
+      </section>
+
+      <!-- EXPORTS -->
+      <section class="card" data-view="exports" style="display:none">
+        <h2>Exports</h2>
+        <div class="btns">
+          <button class="btn" id="expRaw">RAW.csv</button>
+          <button class="btn" id="expSummary">SUMMARY.csv</button>
+          <button class="btn" id="expChangepoints">CHANGEPOINTS.csv</button>
+          <button class="btn" id="expDebriefs">DEBRIEFS.csv</button>
+          <button class="btn" id="printChart">RunChart.pdf</button>
+          <button class="btn primary" id="shareAll">Share/Email all</button>
+          <button class="btn ghost" id="dlSw">Download sw.js</button>
+          <button class="btn ghost" id="dlManifest">Download manifest.webmanifest</button>
+        </div>
+        <div class="small">Files are generated on-device. Use Share to send via your phone’s email app. No data leaves this device unless you share it.</div>
+        <div class="diag small"><b>Diagnostics</b>
+          <pre id="diagOut">(tests will run on load)</pre>
+        </div>
+      </section>
+
+      <!-- HELP -->
+      <section class="card help" data-view="help" style="display:none">
+        <h2>Help & SOPs</h2>
+        <h3>Before we start</h3>
+        <ul>
+          <li>Mini-audit (10–12 Aug): cover AM, PM, ND and a weekend shift.</li>
+          <li>If an observer can’t do it, have a backup; backfill next day.</li>
+          <li>Agree on what counts as “done” for each tick box; 10‑min briefing.</li>
+          <li>Notes: no patient identifiers. The app blocks names/DOB/MRN patterns.</li>
+          <li>Test on ward iPhones + Androids before 13 Aug.</li>
+        </ul>
+        <h3>How to read the run chart</h3>
+        <ul>
+          <li>Shift = 6 or more points in a row above or below the median.</li>
+          <li>Trend = 5 or more points going up or down in a row.</li>
+          <li>Outlier = one point way higher or lower than the rest.</li>
+          <li>Median appears after at least 10 points.</li>
+        </ul>
+        <h3>Weekly review</h3>
+        <ul>
+          <li>Check % by shift and item-level rates (IDs, Risks, Goals, Tasks).</li>
+          <li>Confirm weekend coverage ≥30% overall.</li>
+          <li>Export and email CSVs + RunChart each week.</li>
+        </ul>
+        <h3>Close-out checklist</h3>
+        <ul>
+          <li>Export RAW, SUMMARY, CHANGEPOINTS, DEBRIEFS, RunChart.pdf.</li>
+          <li>Complete Change Log entries for any SOP or process updates.</li>
+          <li>File to Oracle QI Register and ward folder.</li>
+        </ul>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="card" data-view="settings" style="display:none">
+        <h2>Settings</h2>
+        <div class="row">
+          <div>
+            <label>Ward name</label>
+            <input id="s_ward" value="Spinal Rehabilitation Ward" />
+          </div>
+          <div>
+            <label>Target %</label>
+            <input id="s_target" type="number" min="50" max="100" value="85" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Baseline % (enter after 10–12 Aug)</label>
+            <input id="s_baseline" type="number" min="0" max="100" />
+          </div>
+          <div>
+            <label>Daily email reminder at 20:00</label>
+            <select id="s_reminder"><option>On</option><option>Off</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Cycle start</label>
+            <input id="s_start" type="date" />
+          </div>
+          <div>
+            <label>Cycle end</label>
+            <input id="s_end" type="date" />
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="saveSettings">Save settings</button>
+          <button class="btn warn" id="wipeData">Clear local data</button>
+        </div>
+        <div class="small">Clearing data erases audits and settings on this device only.</div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Pre-shift modal (once per app open) -->
+<div class="modal" id="preModal" style="display:flex">
+  <div class="box">
+    <h2>Before you start this audit</h2>
+    <ul class="small">
+      <li>Follow the roster for today's shift (AM/PM/ND).</li>
+      <li>Watch one handover only — no prompting.</li>
+      <li>Tick only what you clearly saw/heard.</li>
+      <li>Notes ≤10 words; no names, DOB, MRN.</li>
+      <li>Save within 30 seconds.</li>
+    </ul>
+    <div class="btns" style="margin-top:10px"><button class="btn primary" id="preOk">Got it</button></div>
+  </div>
+</div>
+
+<!-- Post‑save share banner -->
+<div class="banner" id="shareBanner" style="display:none">
+  <div class="inner small">
+    <div>Audit saved. Send today’s files to carl.gallardo@austin.org.au?</div>
+    <button class="btn primary" id="shareNow">Send now</button>
+    <button class="btn" id="shareLater">Later</button>
+  </div>
+</div>
+
+<!-- Modal for PHI warning -->
+<div class="modal" id="phiModal">
+  <div class="box">
+    <h2>Remove patient details</h2>
+    <div class="small">Notes must not include names, DOB or record numbers. Please edit and try again.</div>
+    <div class="btns" style="margin-top:10px"><button class="btn primary" id="phiOk">OK</button></div>
+  </div>
+</div>
+
+<script>
+/***** CONFIG *****/
+const CFG = {
+  wardName: 'Spinal Rehabilitation Ward',
+  target: 85,
+  baseline: null,
+  cycleStart: '2025-08-13',
+  cycleEnd: '2025-09-09',
+  reminder: 'On',
+};
+
+/***** STORAGE (IndexedDB light wrapper) *****/
+const DB_NAME = 'wardPDSA_v3'; const DB_VER = 2; let db;
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER); r.onupgradeneeded=()=>{db=r.result; if(!db.objectStoreNames.contains('audits')) db.createObjectStore('audits',{keyPath:'id'}); if(!db.objectStoreNames.contains('settings')) db.createObjectStore('settings',{keyPath:'k'}); if(!db.objectStoreNames.contains('flags')) db.createObjectStore('flags',{keyPath:'k'}); if(!db.objectStoreNames.contains('debriefs')) db.createObjectStore('debriefs',{keyPath:'id'}); if(!db.objectStoreNames.contains('changes')) db.createObjectStore('changes',{keyPath:'id'});}; r.onsuccess=()=>{db=r.result; res(db)}; r.onerror=()=>rej(r.error)});} 
+function put(store,val){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(val); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error)})}
+function get(store,key){return new Promise((res,rej)=>{const tx=db.transaction(store,'readonly'); const req=tx.objectStore(store).get(key); req.onsuccess=()=>res(req.result||null); req.onerror=()=>rej(req.error)})}
+function all(store){return new Promise((res,rej)=>{const tx=db.transaction(store,'readonly'); const req=tx.objectStore(store).getAll(); req.onsuccess=()=>res(req.result||[]); req.onerror=()=>rej(req.error)})}
+function clearStore(store){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'); tx.objectStore(store).clear(); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error)})}
+
+/***** HELPERS *****/
+const $=s=>document.querySelector(s);
+const todayISO=()=>new Date().toISOString().slice(0,10);
+function toId(date,shift){return `${date}_${shift}`}
+function fmt(n,dp=1){return (n==null||isNaN(n))?'–':Number(n).toFixed(dp)}
+function median(arr){if(!arr.length) return null; const a=[...arr].sort((x,y)=>x-y); const m=Math.floor(a.length/2); return a.length%2? a[m] : (a[m-1]+a[m])/2}
+function weekStart(d){const nd=new Date(d); const day=(nd.getDay()+6)%7; nd.setDate(nd.getDate()-day); nd.setHours(0,0,0,0); return nd}
+
+/***** PHI BLOCKER *****/
+const PHI_PATTERNS=[/\b\d{2}[\/-]\d{2}[\/-]\d{2,4}\b/,/\bMRN\s*[:#]?\s*\d{5,}\b/i,/[A-Z][a-z]+\s+[A-Z][a-z]+/];
+function hasPHI(txt){return PHI_PATTERNS.some(rx=>rx.test(txt||''))}
+
+/***** ROSTER *****/
+function genRoster(start,end){const out=[]; let d=new Date(start); const endD=new Date(end); while(d<=endD){const iso=d.toISOString().slice(0,10); ['AM','PM','ND'].forEach(shift=>out.push({date:iso,shift,done:false,ok:null})); d.setDate(d.getDate()+1);} return out}
+
+/***** STATE *****/
+let roster=[]; let audits=[]; let postSavePrompt=true; let lastShareDay=null; let debriefs=[]; let changes=[]; let preShown=false;
+
+/***** CHART (vanilla canvas) *****/
+function drawRunChart(canvas, points, target){
+  const ctx=canvas.getContext('2d'); canvas.width=canvas.clientWidth*devicePixelRatio; canvas.height=canvas.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio); ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  const pad=30, W=canvas.clientWidth, H=canvas.clientHeight; if(points.length===0){ctx.fillStyle='#9ca3af'; ctx.fillText('No data yet', 10,20); return}
+  const ys=points.map(p=>p.y);
+  const xStep=(W-2*pad)/(points.length-1||1);
+  // grid
+  ctx.strokeStyle='#1f2937'; ctx.lineWidth=1; for(let y=0;y<=100;y+=20){const yy=H-pad-(y/100)*(H-2*pad); ctx.beginPath(); ctx.moveTo(pad,yy); ctx.lineTo(W-pad,yy); ctx.stroke(); ctx.fillStyle='#9ca3af'; ctx.fillText(y+'%',4,yy+3)}
+  // target line
+  const ty=H-pad-(target/100)*(H-2*pad); ctx.strokeStyle='#22d3ee'; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(pad,ty); ctx.lineTo(W-pad,ty); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='#22d3ee'; ctx.fillText('Target '+target+'%', W-pad-100, ty-6);
+  // median after 10 points
+  if(points.length>=10){
+    const med=median(ys); if(med!=null){const my=H-pad-(med/100)*(H-2*pad); ctx.strokeStyle='#0ea5a6'; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(pad,my); ctx.lineTo(W-pad,my); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='#0ea5a6'; ctx.fillText('Median '+fmt(med), W-pad-120, my-6)}
+  }
+  // series
+  ctx.strokeStyle='#a7f3d0'; ctx.lineWidth=2; ctx.beginPath(); points.forEach((p,i)=>{const xx=pad+i*xStep; const yy=H-pad-(p.y/100)*(H-2*pad); if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy)}); ctx.stroke();
+  // points
+  points.forEach((p,i)=>{const xx=pad+i*xStep; const yy=H-pad-(p.y/100)*(H-2*pad); ctx.fillStyle='#e5e7eb'; ctx.beginPath(); ctx.arc(xx,yy,3,0,Math.PI*2); ctx.fill()});
+}
+
+/***** SIGNALS (simple rules) *****/
+function detectSignals(series){
+  const out=[]; if(series.length<6) return out;
+  const med=median(series);
+  // shift: 6 in a row above or below median
+  let streak=0, lastSide=0; for(let i=0;i<series.length;i++){const side=series[i]>med?1:(series[i]<med?-1:0); if(side!==0 && side===lastSide) streak++; else streak=1; lastSide=side; if(streak>=6){out.push({type:'Shift', index:i}); break}}
+  // trend: 5 up or down
+  let up=1, dn=1; for(let i=1;i<series.length;i++){ if(series[i]>series[i-1]){up++; dn=1}else if(series[i]<series[i-1]){dn++; up=1}else{up=1; dn=1} if(up>=5||dn>=5){out.push({type:'Trend', index:i}); break}}
+  // astronomical: 3*IQR proxy
+  const a=[...series].sort((x,y)=>x-y); const q1=a[Math.floor(a.length*0.25)], q3=a[Math.floor(a.length*0.75)], iqr=q3-q1; const low=q1-3*iqr, high=q3+3*iqr; for(let i=0;i<series.length;i++){ if(series[i]<low||series[i]>high){out.push({type:'Outlier', index:i}); break} }
+  return out
+}
+
+/***** SRF file naming *****/
+function srfDate(d=new Date()){ const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); const yyyy=d.getFullYear(); return `${mm}${dd}${yyyy}` }
+function srfName(type, ext='csv'){ return `SRF_${srfDate()}_${type}.${ext}` }
+
+/***** EXPORTS *****/
+function toCSV(rows, headers){const head=headers.join(','); const lines=rows.map(r=>headers.map(h=> (r[h]??'')).join(',')); return [head,...lines].join('\n')}
+function blobFile(name, text){return new File([text], name, {type:'text/csv'})}
+function exportRAW(){
+  const headers=['Date','Shift','Observer','CompliancePercent','Minutes','Omissions','CPV','IDs','Risks','Goals','Tasks','Reason','Notes'];
+  const rows=audits.map(a=>({Date:a.date,Shift:a.shift,Observer:a.initials,CompliancePercent:a.comp,Minutes:a.minutes,Omissions:a.omissions,CPV:a.c_cpv?1:0,IDs:a.c_ids?1:0,Risks:a.c_risks?1:0,Goals:a.c_goals?1:0,Tasks:a.c_tasks?1:0,Reason:a.reason||'',Notes:(a.notes||'').replace(/\n/g,' ')}));
+  return blobFile(srfName('RAW'), toCSV(rows, headers))
+}
+function rollup(period){
+  const out=[]; if(audits.length===0) return out;
+  const byKey={};
+  audits.forEach(a=>{const d=new Date(a.date); let key=''; if(period==='day'){key=a.date}else{const ws=weekStart(d).toISOString().slice(0,10); key=ws}
+    byKey[key] ||= {key, n:0, comp:0, om:0, min:0, am:0, pm:0, nd:0};
+    const b=byKey[key]; b.n++; b.comp+=a.comp; b.om+=a.omissions; b.min+=a.minutes; if(a.shift==='AM') b.am++; if(a.shift==='PM') b.pm++; if(a.shift==='ND') b.nd++; });
+  for(const k of Object.keys(byKey).sort()){const b=byKey[k]; out.push({Period:k, HandoversObserved:b.n, CompliancePercent: +(b.comp/b.n).toFixed(1), AvgOmissions:+(b.om/b.n).toFixed(2), AvgDuration:+(b.min/b.n).toFixed(2), 'AM%':+(b.am/b.n*100).toFixed(1), 'PM%':+(b.pm/b.n*100).toFixed(1), 'ND%':+(b.nd/b.n*100).toFixed(1)})}
+  return out
+}
+function exportSUMMARY(){
+  const headers=['Period','HandoversObserved','CompliancePercent','AvgOmissions','AvgDuration','AM%','PM%','ND%'];
+  const rows=[...rollup('day'),...rollup('week')];
+  return blobFile(srfName('SUMMARY'), toCSV(rows, headers))
+}
+function exportCHANGEPOINTS(){
+  const series=audits.map(a=>a.comp); const sig=detectSignals(series);
+  const rows=[]; sig.forEach(s=>{ rows.push({Date:audits[s.index]?.date||'', Shift:audits[s.index]?.shift||'', Type:s.type, Label:''}) });
+  changes.forEach(c=>{ rows.push({Date:c.date, Shift:c.shift, Type:'ManualChange', Label:c.label||c.cat}) });
+  return blobFile(srfName('CHANGEPOINTS'), toCSV(rows, ['Date','Shift','Type','Label']))
+}
+function exportDEBRIEFS(){
+  const headers=['Date','Shift','Observer','Reason','Note','AuditId'];
+  const rows = (debriefs.length? debriefs : audits.filter(a=>!a.c_cpv && a.reason).filter((_,i)=> i%3===0).map(a=>({date:a.date,shift:a.shift,observer:a.initials,reason:a.reason,note:'',auditId:a.id})))
+    .map(d=>({Date:d.date,Shift:d.shift,Observer:d.observer||'',Reason:d.reason||'',Note:(d.note||'').replace(/\n/g,' '),AuditId:d.auditId||toId(d.date,d.shift)}));
+  return blobFile(srfName('DEBRIEFS'), toCSV(rows, headers))
+}
+async function shareAll(){
+  const files=[exportRAW(), exportSUMMARY(), exportCHANGEPOINTS(), exportDEBRIEFS()];
+  if(navigator.share && navigator.canShare && navigator.canShare({files})){
+    try{ await navigator.share({title:'Ward Handover Exports', text:'Please forward to carl.gallardo@austin.org.au', files}); lastShareDay=todayISO(); await put('flags',{k:'lastShare', v:lastShareDay}); }catch(e){}
+  } else {
+    files.forEach(f=>{const url=URL.createObjectURL(f); const a=document.createElement('a'); a.href=url; a.download=f.name; a.click(); URL.revokeObjectURL(url)});
+    alert('Files downloaded. Attach to an email to carl.gallardo@austin.org.au');
+  }
+}
+
+/***** INIT *****/
+async function loadSettings(){
+  const w=await get('settings','ward'); if(w) CFG.wardName=w.v; const t=await get('settings','target'); if(t) CFG.target=t.v; const b=await get('settings','baseline'); if(b) CFG.baseline=b.v; const s=await get('settings','start'); if(s) CFG.cycleStart=s.v; const e=await get('settings','end'); if(e) CFG.cycleEnd=e.v; const r=await get('settings','reminder'); if(r) CFG.reminder=r.v; const ls=await get('flags','lastShare'); if(ls) lastShareDay=ls.v;
+  $('#wardName').textContent = `${CFG.wardName} • ${new Date(CFG.cycleStart).toLocaleDateString()}–${new Date(CFG.cycleEnd).toLocaleDateString()}`;
+  roster=genRoster(CFG.cycleStart, CFG.cycleEnd);
+}
+
+function autoSuggestShift(){
+  const h=new Date().getHours(); let s='AM'; if(h>=13&&h<21) s='PM'; else if(h>=21||h<7) s='ND'; $('#a_shift').value=s;
+}
+
+function computeCompliance(ticks){ return +(ticks/5*100).toFixed(1) }
+function complianceForForm(){
+  const ticks=['c_cpv','c_ids','c_risks','c_goals','c_tasks'].map(id=>$('#'+id).checked).filter(Boolean).length; return computeCompliance(ticks)
+}
+
+function renderTodaySlots(){
+  const t=todayISO(); const slots=roster.filter(r=>r.date===t); const box=$('#todaySlots'); box.innerHTML=''; slots.forEach(sl=>{
+    const have=audits.find(a=>a.id===toId(sl.date, sl.shift)); let state='🔴 Missed'; let color='var(--bad)';
+    if(have){ state = have.comp>=CFG.target ? '✅ Completed' : '🟡 <85%'; color = have.comp>=CFG.target ? 'var(--good)' : 'var(--warn)'; }
+    const div=document.createElement('div'); div.className='slot'; div.innerHTML=`<div class='name'><b>${sl.shift}</b> • ${sl.date}</div><div class='state'><span class='statusDot' style='background:${color}'></span>${state}</div>`; box.appendChild(div);
+  })
+}
+
+function refreshDashboard(){
+  const count=audits.length; const k=(id)=>document.getElementById(id);
+  if(k('k_count')) k('k_count').textContent=count;
+  const today=audits.filter(a=>a.date===todayISO()); const ws=weekStart(new Date()).getTime(); const week=audits.filter(a=> weekStart(new Date(a.date)).getTime()===ws);
+  const avg=arr=> arr.length? (arr.reduce((s,a)=>s+a.comp,0)/arr.length) : null;
+  if(k('k_today')) k('k_today').textContent = fmt(avg(today));
+  if(k('k_week')) k('k_week').textContent = fmt(avg(week));
+  const med = count>=10 ? median(audits.map(a=>a.comp)) : null; if(k('k_median')) k('k_median').textContent = fmt(med);
+  const om = week.length? week.reduce((s,a)=>s+a.omissions,0)/week.length : null; if(k('k_om')) k('k_om').textContent=fmt(om,2);
+  const mn = week.length? week.reduce((s,a)=>s+a.minutes,0)/week.length : null; if(k('k_min')) k('k_min').textContent=fmt(mn,2);
+  const isWeekend = d=>{const day=new Date(d).getDay(); return day===0||day===6};
+  const wkEndCov = week.length? (week.filter(a=>isWeekend(a.date)).length/week.length*100) : null; if(k('k_weekend')) k('k_weekend').textContent=fmt(wkEndCov);
+  const rate=(arr,prop)=> arr.length? (arr.filter(a=>a[prop]).length/arr.length*100): null;
+  if(k('k_item_cpv')) k('k_item_cpv').textContent = fmt(rate(week,'c_cpv'));
+  if(k('k_item_ids')) k('k_item_ids').textContent = fmt(rate(week,'c_ids'));
+  if(k('k_item_risks')) k('k_item_risks').textContent = fmt(rate(week,'c_risks'));
+  if(k('k_item_goals')) k('k_item_goals').textContent = fmt(rate(week,'c_goals'));
+  if(k('k_item_tasks')) k('k_item_tasks').textContent = fmt(rate(week,'c_tasks'));
+  const order={'AM':0,'PM':1,'ND':2}; const pts=[...audits].sort((a,b)=> a.date.localeCompare(b.date) || order[a.shift]-order[b.shift]).map((a,i)=>({x:i,y:a.comp}));
+  const canvas=k('runChart'); if(canvas) drawRunChart(canvas, pts, CFG.target);
+  const sigs=detectSignals(audits.map(a=>a.comp)); const chips=k('signalChips'); if(chips){ chips.innerHTML=''; sigs.forEach(s=>{const el=document.createElement('div'); el.className='badge'; el.textContent=s.type; chips.appendChild(el)}) }
+}
+
+async function saveAudit(){
+  const date=$('#a_date').value||todayISO(); const shift=$('#a_shift').value; const notes=$('#a_notes').value.trim(); if(hasPHI(notes)){ $('#phiModal').style.display='flex'; return }
+  const comp=complianceForForm(); if(comp<100 && !$('#a_reason').value){ alert('Select a reason when compliance is below 100%'); return }
+  const rec={ id:toId(date,shift), date, shift, initials:($('#a_initials').value||'').trim().toUpperCase(), minutes:+$('#a_minutes').value||0, omissions:+$('#a_omissions').value||0, c_cpv:$('#c_cpv').checked, c_ids:$('#c_ids').checked, c_risks:$('#c_risks').checked, c_goals:$('#c_goals').checked, c_tasks:$('#c_tasks').checked, reason:$('#a_reason').value||'', notes };
+  rec.comp=comp;
+  await put('audits', rec);
+  audits = await all('audits');
+  renderTodaySlots(); refreshDashboard();
+  if(postSavePrompt){ $('#shareBanner').style.display='block'; }
+  if(!rec.c_cpv && Math.random() < 0.3){
+    $('#d_date').value = rec.date; $('#d_shift').value = rec.shift; $('#d_auditId').value = rec.id; $('#d_reason').value = rec.reason || 'NoCPV'; $('#d_note').value='';
+    showTab('debrief');
+  }
+}
+
+function clearForm(){ ['a_minutes','a_omissions','a_notes','a_initials'].forEach(id=>$('#'+id).value=''); ['c_cpv','c_ids','c_risks','c_goals','c_tasks'].forEach(id=>$('#'+id).checked=false); $('#a_reason').value=''; $('#a_date').value=todayISO(); autoSuggestShift(); }
+
+/***** TABS *****/
+function showTab(name){
+  if(name==='audit' && !preShown){ const m=document.getElementById('preModal'); if(m) m.style.display='flex'; return; }
+  document.querySelectorAll('[data-view]').forEach(v=> v.style.display = (v.getAttribute('data-view')===name)?'block':'none');
+  document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.getAttribute('data-tab')===name));
+  if(name==='summary'){ refreshDashboard() }
+  if(name==='audit'){ renderTodaySlots() }
+}
+
+/***** SETTINGS SAVE *****/
+async function saveSettings(){
+  CFG.wardName=$('#s_ward').value.trim()||CFG.wardName; CFG.target=+$('#s_target').value||CFG.target; CFG.baseline=$('#s_baseline').value? +$('#s_baseline').value : null; CFG.cycleStart=$('#s_start').value||CFG.cycleStart; CFG.cycleEnd=$('#s_end').value||CFG.cycleEnd; CFG.reminder=$('#s_reminder').value;
+  await put('settings',{k:'ward',v:CFG.wardName}); await put('settings',{k:'target',v:CFG.target}); await put('settings',{k:'baseline',v:CFG.baseline}); await put('settings',{k:'start',v:CFG.cycleStart}); await put('settings',{k:'end',v:CFG.cycleEnd}); await put('settings',{k:'reminder',v:CFG.reminder});
+  $('#wardName').textContent = `${CFG.wardName} • ${new Date(CFG.cycleStart).toLocaleDateString()}–${new Date(CFG.cycleEnd).toLocaleDateString()}`;
+  roster=genRoster(CFG.cycleStart, CFG.cycleEnd);
+  alert('Settings saved');
+}
+
+/***** EXPORT BUTTONS *****/
+function downloadFile(file){ const url=URL.createObjectURL(file); const a=document.createElement('a'); a.href=url; a.download=file.name; a.click(); URL.revokeObjectURL(url) }
+
+/***** REMINDERS *****/
+function scheduleEightPMCheck(){ setInterval(async()=>{ if(CFG.reminder!=='On') return; const now=new Date(); if(now.getHours()===20 && (lastShareDay!==todayISO())){ if(confirm('Send today\'s exports now?')){ await shareAll(); lastShareDay=todayISO(); await put('flags',{k:'lastShare', v:lastShareDay}); } } }, 60*1000) }
+
+/***** PWA FILES (manifest + service worker) *****/
+const MANIFEST = {name:'Ward Handover Audit', short_name:'Handover Audit', start_url:'./', display:'standalone', background_color:'#0b0f14', theme_color:'#0ea5a6', icons:[{src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', sizes:'192x192', type:'image/svg+xml'}] };
+const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v1').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
+self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v1').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
+
+function installManifest(){
+  const link=document.createElement('link'); link.rel='manifest';
+  if(/^https?:$/i.test(location.protocol)){
+    link.href='manifest.webmanifest';
+  } else {
+    const blob=new Blob([JSON.stringify(MANIFEST)],{type:'application/manifest+json'}); link.href=URL.createObjectURL(blob);
+  }
+  document.head.appendChild(link);
+}
+function registerSW(){
+  if(!('serviceWorker' in navigator)) return;
+  if(!/^https?:$/i.test(location.protocol)){
+    console.log('Skipping Service Worker registration on non-HTTP(S) protocol. Host the files to enable install.');
+    return;
+  }
+  navigator.serviceWorker.register('./sw.js').catch(err=>{
+    console.warn('Service Worker registration failed (likely when testing from file://). Host over HTTPS with sw.js next to this HTML.', err);
+  });
+}
+
+function downloadSWFile(){ downloadFile(new File([SW_SOURCE],'sw.js',{type:'text/javascript'})); }
+function downloadManifestFile(){ downloadFile(new File([JSON.stringify(MANIFEST,null,2)],'manifest.webmanifest',{type:'application/manifest+json'})); }
+
+/***** CHANGE LOG *****/
+function renderChangeList(){ const box=document.getElementById('cl_list'); if(!box) return; box.innerHTML=''; changes.sort((a,b)=> a.date.localeCompare(b.date)).forEach(c=>{ const div=document.createElement('div'); div.className='slot'; div.innerHTML=\`<div class='name'><b>\${c.date} \${c.shift}</b> • \${c.cat} • \${c.label}</div><div class='state small'>\${(c.note||'')}</div>\`; box.appendChild(div); }); }
+
+/***** SELF‑TESTS *****/
+function runSelfTests(){
+  const logs=[]; const ok=(name,cond)=>logs.push(`${cond?'✅':'❌'} ${name}`);
+  ok('median odd length', median([3,1,2])===2);
+  ok('median even length', median([1,2,3,4])===2.5);
+  ok('compliance 0/5 = 0%', computeCompliance(0)===0);
+  ok('compliance 3/5 = 60%', computeCompliance(3)===60);
+  ok('compliance 5/5 = 100%', computeCompliance(5)===100);
+  const sigs1=detectSignals([60,62,64,66,68,70]); ok('trend detected (increasing)', sigs1.some(s=>s.type==='Trend'));
+  const sigs2=detectSignals([90,88,86,84,82,80]); ok('trend detected (decreasing)', sigs2.some(s=>s.type==='Trend'));
+  ok('median hidden when <10 points', (function(){const arr=[60,61,62,63,64,65,66,67,68]; return arr.length<10;})());
+  ok('SRF filename pattern', /^SRF\_\d{8}\_RAW\.csv$/.test(srfName('RAW')));
+  const el=document.getElementById('diagOut'); if(el) el.textContent = logs.join('\n');
+}
+
+/***** BOOT *****/
+(async function(){
+  await idb(); await loadSettings(); audits = await all('audits'); debriefs = await all('debriefs').catch(()=>[]); changes = await all('changes').catch(()=>[]);
+  // defaults
+  document.getElementById('s_ward').value=CFG.wardName; document.getElementById('s_target').value=CFG.target; if(CFG.baseline!=null) document.getElementById('s_baseline').value=CFG.baseline; document.getElementById('s_start').value=CFG.cycleStart; document.getElementById('s_end').value=CFG.cycleEnd; document.getElementById('s_reminder').value=CFG.reminder;
+  document.getElementById('a_date').value=todayISO(); autoSuggestShift(); renderTodaySlots(); refreshDashboard(); renderChangeList();
+  // tabs
+  document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> showTab(t.getAttribute('data-tab'))));
+  // audit
+  document.getElementById('saveAudit').addEventListener('click', saveAudit); document.getElementById('clearForm').addEventListener('click', clearForm);
+  // debrief
+  document.getElementById('saveDebrief').addEventListener('click', async()=>{ const rec={date:document.getElementById('d_date').value||todayISO(),shift:document.getElementById('d_shift').value,auditId:document.getElementById('d_auditId').value,reason:document.getElementById('d_reason').value, note:document.getElementById('d_note').value, observer:(document.getElementById('a_initials').value||'')}; await put('debriefs', {id:`${rec.date}_${rec.shift}_${rec.reason}_${Date.now()}`, ...rec}); debriefs = await all('debriefs'); alert('Debrief saved'); });
+  document.getElementById('clearDebrief').addEventListener('click', ()=>{ ['d_note'].forEach(id=>document.getElementById(id).value='') });
+  // change log
+  document.getElementById('saveChange').addEventListener('click', async()=>{ const rec={date:document.getElementById('cl_date').value||todayISO(), shift:document.getElementById('cl_shift').value, cat:document.getElementById('cl_cat').value, label:(document.getElementById('cl_label').value||'').trim(), note:(document.getElementById('cl_note').value||'').trim()}; await put('changes',{id:`${rec.date}_${rec.shift}_${Date.now()}`, ...rec}); changes = await all('changes'); renderChangeList(); alert('Change logged'); });
+  document.getElementById('clearChange').addEventListener('click', ()=>{ ['cl_label','cl_note'].forEach(id=>document.getElementById(id).value='') });
+  // exports
+  document.getElementById('expRaw').addEventListener('click', ()=> downloadFile(exportRAW()));
+  document.getElementById('expSummary').addEventListener('click', ()=> downloadFile(exportSUMMARY()));
+  document.getElementById('expChangepoints').addEventListener('click', ()=> downloadFile(exportCHANGEPOINTS()));
+  document.getElementById('expDebriefs').addEventListener('click', ()=> downloadFile(exportDEBRIEFS()));
+  document.getElementById('printChart').addEventListener('click', ()=> window.print());
+  document.getElementById('shareAll').addEventListener('click', shareAll);
+  document.getElementById('dlSw').addEventListener('click', downloadSWFile);
+  document.getElementById('dlManifest').addEventListener('click', downloadManifestFile);
+  // banner
+  document.getElementById('shareNow').addEventListener('click', async()=>{ document.getElementById('shareBanner').style.display='none'; await shareAll() });
+  document.getElementById('shareLater').addEventListener('click', ()=> document.getElementById('shareBanner').style.display='none');
+  // pre-shift modal
+  document.getElementById('preOk').addEventListener('click', ()=>{ document.getElementById('preModal').style.display='none'; preShown=true; showTab('audit'); });
+  // PHI modal
+  document.getElementById('phiOk').addEventListener('click', ()=> document.getElementById('phiModal').style.display='none');
+  // reminders + PWA
+  scheduleEightPMCheck(); installManifest(); registerSW(); runSelfTests();
+})();
+</script>
+</body>
+</html>
