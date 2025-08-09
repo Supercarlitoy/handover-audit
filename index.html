@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0ea5a6" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect width='100%25' height='100%25' fill='%230ea5a6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='96' font-family='system-ui' fill='white'%3E✓%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="icons/app-192.png">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none';" />
 <style>
 :root{--bg:#0b0f14;--surface:#0f172a;--muted:#9ca3af;--ink:#e5e7eb;--line:#1f2937;--brand:#0ea5a6;--accent:#22d3ee;--good:#10b981;--warn:#f59e0b;--bad:#ef4444}
@@ -47,6 +47,11 @@ textarea{min-height:64px;resize:vertical}
 canvas.run{width:100%!important;height:300px!important;background:#08111e;border:1px solid var(--line);border-radius:10px}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#0b1220;font-size:12px;margin-right:6px}
 .help li{margin:6px 0}
+.fab{position:fixed;right:16px;bottom:76px;width:56px;height:56px;border-radius:50%;
+  background:#0a84ff;color:#fff;border:0;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.2);z-index:1000}
+.snack{position:fixed;left:50%;transform:translateX(-50%) translateY(120%);bottom:70px;background:#333;color:#fff;
+  padding:10px 12px;border-radius:12px;display:flex;gap:8px;transition:.25s;z-index:1001}
+.snack.show{transform:translateX(-50%) translateY(0)}
 .banner{position:fixed;left:0;right:0;bottom:10px;display:flex;justify-content:center;z-index:50}
 .banner .inner{display:flex;gap:8px;background:#0b1220;border:1px solid var(--line);padding:10px 12px;border-radius:12px;box-shadow:0 8px 24px #0007}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:60}
@@ -364,6 +369,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
           <button class="btn primary" id="saveSettings">Save settings</button>
           <button class="btn warn" id="wipeData">Clear local data</button>
         </div>
+        <small id="persistNote" style="opacity:.7"></small>
         <div class="small">Clearing data erases audits and settings on this device only.</div>
       </section>
 
@@ -652,15 +658,15 @@ function scheduleEightPMCheck(){ setInterval(async()=>{ if(CFG.reminder!=='On') 
 
 /***** PWA FILES (manifest + service worker) *****/
 const MANIFEST = {name:'Ward Handover Audit', short_name:'Handover Audit', start_url:'./', display:'standalone', background_color:'#0b0f14', theme_color:'#0ea5a6', icons:[{src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', sizes:'192x192', type:'image/svg+xml'}] };
-const SW_SOURCE = `const CACHE_NAME='wardPWA-v13'; const OLD_CACHES=['wardPWA-v12','wardPWA-v11','wardPWA-v10','wardPWA-v9'];
-self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
+const SW_SOURCE = `const CACHE_NAME='wardPWA-v14'; const OLD_CACHES=['wardPWA-v13','wardPWA-v12','wardPWA-v11','wardPWA-v10'];
+self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest','./icons/app-192.png','./icons/app-512.png','./icons/maskable-512.png'])))});
 self.addEventListener('activate',e=>{e.waitUntil(Promise.all([clients.claim(), ...OLD_CACHES.map(name=>caches.delete(name))]))});
 self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open(CACHE_NAME).then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
 
 function installManifest(){
   const link=document.createElement('link'); link.rel='manifest';
   if(/^https?:$/i.test(location.protocol)){
-    link.href='manifest.webmanifest?v=13';
+    link.href='manifest.webmanifest?v=14';
   } else {
     const blob=new Blob([JSON.stringify(MANIFEST)],{type:'application/manifest+json'}); link.href=URL.createObjectURL(blob);
   }
@@ -764,6 +770,122 @@ window.showTab = function(tab){
     if (tab === 'summary' && typeof window.refreshDashboard === 'function') window.refreshDashboard();
   } catch(e){}
 };
+
+// ---------- Save FAB + Undo + toast ----------
+(function(){
+  const fab = document.getElementById('fabSave');
+  const snack = document.getElementById('snack');
+  const sText = document.getElementById('snackText');
+  const sUndo = document.getElementById('snackUndo');
+  if(!fab || !snack) return;
+
+  window.toast = function(msg, canUndo){
+    sText.textContent = msg||'';
+    sUndo.style.display = canUndo?'inline-block':'none';
+    snack.classList.add('show');
+    setTimeout(()=>snack.classList.remove('show'), 3000);
+  };
+
+  const _undo = { type:null, payload:null };
+  function vibrate(ms){ try{ navigator.vibrate && navigator.vibrate(ms||20); }catch(e){} }
+
+  // Wrap existing saveAudit if present
+  const origSave = window.saveAudit;
+  async function doSave(){
+    const before = Array.isArray(window.audits)? window.audits.length : NaN;
+    if (typeof origSave === 'function') await origSave();
+    else console.warn('saveAudit() not found; wire the FAB when available.');
+    const after = Array.isArray(window.audits)? window.audits.length : NaN;
+    if (!Number.isNaN(before) && after>before){
+      _undo.type='audit-pop';
+      _undo.payload=1; // pop 1
+    } else {
+      _undo.type=null;
+    }
+    vibrate(20);
+    toast('Audit saved', !!_undo.type);
+  }
+
+  fab.addEventListener('click', doSave);
+  fab.addEventListener('touchstart', (e)=>{ e.preventDefault(); doSave(); }, {passive:false});
+
+  // Undo removes the last audit entry if our global is present
+  function persistAudits(){
+    try{ localStorage.setItem('audits', JSON.stringify(window.audits||[])); }catch(e){}
+    try{ window.refreshDashboard && window.refreshDashboard(); }catch(e){}
+    try{ window.renderChangeList && window.renderChangeList(); }catch(e){}
+    try{ window.renderTodaySlots && window.renderTodaySlots(); }catch(e){}
+  }
+  sUndo.addEventListener('click', ()=>{
+    if (_undo.type==='audit-pop' && Array.isArray(window.audits) && window.audits.length){
+      window.audits.pop();
+      persistAudits();
+      toast('Undone', false);
+      vibrate(10);
+    }
+  });
+})();
+
+// ---------- View Transitions ----------
+(function(){
+  const _origShowTab = window.showTab;
+  window.showTab = function(tab){
+    const run = ()=>{ typeof _origShowTab==='function' ? _origShowTab(tab) : fallbackShow(tab); };
+    if (document.startViewTransition){
+      document.startViewTransition(run);
+    } else {
+      run();
+    }
+  };
+  function fallbackShow(tab){
+    try{
+      document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+      const names = ['audit','debrief','summary','changelog','exports','help','settings'];
+      names.forEach(name=>{
+        const el = document.querySelector('[data-view="'+name+'"]') || document.getElementById(name);
+        if (el) el.style.display = (name===tab)?'block':'none';
+      });
+      if (tab==='summary' && typeof window.refreshDashboard==='function') window.refreshDashboard();
+    }catch(e){}
+  }
+})();
+
+// ---------- Persistent storage ----------
+(async function(){
+  if (!('storage' in navigator) || !navigator.storage.persist) return;
+  try{
+    const already = await navigator.storage.persisted();
+    if (!already){ await navigator.storage.persist(); }
+    const ok = await navigator.storage.persisted();
+    const el = document.getElementById('persistNote');
+    if (el) el.textContent = ok ? 'Storage: Persisted (protected)' : 'Storage: Standard';
+  }catch(e){}
+})();
+
+// ---------- Swipe between tabs ----------
+(function(){
+  const order = ['audit','debrief','summary','changelog','exports','help','settings'];
+  function nextTab(cur){ const i=order.indexOf(cur); return order[(i+1)%order.length]; }
+  function prevTab(cur){ const i=order.indexOf(cur); return order[(i-1+order.length)%order.length]; }
+  const host = document.querySelector('main') || document.body;
+  let x0=0, t0=0;
+  host.addEventListener('touchstart', (e)=>{ if(!e.touches[0]) return; x0=e.touches[0].clientX; t0=Date.now(); }, {passive:true});
+  host.addEventListener('touchend', (e)=>{
+    const dx = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX - x0 : 0;
+    const dt = Date.now()-t0;
+    if (Math.abs(dx) > 60 && dt < 600){
+      const active = (document.querySelector('.tab.active')||{}).dataset?.tab || 'audit';
+      showTab(dx<0 ? nextTab(active) : prevTab(active));
+    }
+  }, {passive:true});
+})();
 </script>
+
+<button id="fabSave" class="fab" aria-label="Save audit">Save</button>
+<div id="snack" class="snack" role="status" aria-live="polite">
+  <span id="snackText"></span>
+  <button id="snackUndo" class="btn">Undo</button>
+</div>
+
 </body>
 </html>
