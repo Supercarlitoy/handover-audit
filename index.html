@@ -369,7 +369,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
 </div>
 
 <!-- Pre-shift modal (once per app open) -->
-<div class="modal" id="preModal" style="display:flex">
+<div class="modal" id="preModal" style="display:none">
   <div class="box">
     <h2>Before you start this audit</h2>
     <ul class="small">
@@ -447,6 +447,16 @@ function preDismiss(){
   preShown = true;
   try { sessionStorage.setItem('preShown','1'); } catch(e) {}
   showTab('audit');
+}
+
+// Handle escape key globally
+function handleKeyDown(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('preModal');
+    if (modal && modal.style.display !== 'none') {
+      preDismiss();
+    }
+  }
 }
 
 /***** CHART (vanilla canvas) *****/
@@ -596,7 +606,18 @@ function clearForm(){ ['a_minutes','a_omissions','a_notes','a_initials'].forEach
 
 /***** TABS *****/
 function showTab(name){
-  if(name==='audit' && !preShown){ const m=document.getElementById('preModal'); if(m) m.style.display='flex'; return; }
+  if(name==='audit' && !preShown){ 
+    const m=document.getElementById('preModal'); 
+    if(m) {
+      m.style.display='flex'; 
+      // Focus the button for accessibility
+      setTimeout(() => {
+        const btn = document.getElementById('preOk');
+        if(btn) btn.focus();
+      }, 100);
+    }
+    return; 
+  }
   document.querySelectorAll('[data-view]').forEach(v=> v.style.display = (v.getAttribute('data-view')===name)?'block':'none');
   document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.getAttribute('data-tab')===name));
   if(name==='summary'){ refreshDashboard() }
@@ -620,9 +641,9 @@ function scheduleEightPMCheck(){ setInterval(async()=>{ if(CFG.reminder!=='On') 
 
 /***** PWA FILES (manifest + service worker) *****/
 const MANIFEST = {name:'Ward Handover Audit', short_name:'Handover Audit', start_url:'./', display:'standalone', background_color:'#0b0f14', theme_color:'#0ea5a6', icons:[{src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', sizes:'192x192', type:'image/svg+xml'}] };
-const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v2').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
+const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v3').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
 self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v2').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v3').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
 
 function installManifest(){
   const link=document.createElement('link'); link.rel='manifest';
@@ -708,6 +729,8 @@ function runSelfTests(){
   document.getElementById('phiOk').addEventListener('click', ()=> document.getElementById('phiModal').style.display='none');
   // reminders + PWA
   scheduleEightPMCheck(); installManifest(); registerSW(); runSelfTests();
+  // Add global keyboard handler
+  document.addEventListener('keydown', handleKeyDown);
 })();
 </script>
 </body>
