@@ -2,37 +2,85 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Ward Handover Audit – PDSA (Offline)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Ward Handover Audit</title>
 <meta name="theme-color" content="#0ea5a6" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-capable" content      <!-- HELP -->
+      <section class="card help" data-view="help" style="display:none">
+        <h2>Hel<!-- Post‑save share banner -->
+<div class="banner" id="shareBanner" style="display:none">
+  <div class="inner small">
+    <div>Audit saved. Send today's files to carl.gallardo@austin.org.au?</div>
+    <button class="btn primary" id="shareNow">Send now</button>
+    <button class="btn" id="shareLater">Later</button>
+  </div>
+</div>
+
+<!-- App update notification -->
+<div class="banner" id="updateBanner" style="display:none">
+  <div class="inner small">
+    <div>✨ App updated! New features available.</div>
+    <button class="btn primary" id="updateOk">Got it</button>
+  </div>
+</div>
+
+<!-- Install prompt banner -->
+<div class="banner" id="installBanner" style="display:none">
+  <div class="inner small">
+    <div>📱 Install this app for offline access</div>
+    <button class="btn primary" id="installApp">Install</button>
+    <button class="btn" id="installLater">Later</button>
+  </div>
+</div></h2>
+        <h3>App Installation</h3>
+        <ul>
+          <li><strong>iPhone/iPad:</strong> Open in Safari → Tap Share → "Add to Home Screen"</li>
+          <li><strong>Android:</strong> Open in Chrome → Tap Menu → "Install app" or "Add to Home screen"</li>
+          <li><strong>QR Code:</strong> Scan to open directly on any device</li>
+          <li>App works offline once installed - no internet needed for audits</li>
+        </ul>
+        <h3>Before we start</h3>
+        <ul>
+          <li>Mini-audit (10–12 Aug): cover AM, PM, ND and a weekend shift.</li>
+          <li>If an observer can't do it, have a backup; backfill next day.</li>
+          <li>Agree on what counts as "done" for each tick box; 10‑min briefing.</li>
+          <li>Notes: no patient identifiers. The app blocks names/DOB/MRN patterns.</li>
+          <li>Test on ward iPhones + Androids before 13 Aug.</li>
+        </ul>meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Handover Audit" />
+<meta name="mobile-web-app-capable" content="yes" />
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect width='100%25' height='100%25' fill='%230ea5a6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='96' font-family='system-ui' fill='white'%3E✓%3C/text%3E%3C/svg%3E" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none';" />
 <style>
 :root{--bg:#0b0f14;--surface:#0f172a;--muted:#9ca3af;--ink:#e5e7eb;--line:#1f2937;--brand:#0ea5a6;--accent:#22d3ee;--good:#10b981;--warn:#f59e0b;--bad:#ef4444}
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
-.app{display:flex;flex-direction:column;min-height:100vh}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;touch-action:manipulation;padding-bottom:66px}
+input,textarea,select{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+.app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 .top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(11,15,20,.98),rgba(11,15,20,.85) 70%,rgba(11,15,20,0));border-bottom:1px solid var(--line)}
 .top .wrap{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--accent));display:inline-grid;place-items:center;color:#022}
 .h1{font-size:18px;font-weight:700}
 .ward{font-size:12px;color:var(--muted)}
-.tabs{display:flex;gap:8px;flex-wrap:wrap}
-.tab{border:1px solid var(--line);padding:8px 10px;border-radius:999px;background:#0b1220;color:#a7f3d0;cursor:pointer}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid var(--line);padding:12px 16px;border-radius:999px;background:#0b1220;color:#a7f3d0;cursor:pointer;white-space:nowrap;flex-shrink:0;min-height:44px;display:flex;align-items:center;font-size:14px}
 .tab.active{background:linear-gradient(180deg,var(--accent),var(--brand));color:#062}
-.main{flex:1}
-.wrap{max-width:960px;margin:0 auto;padding:12px 16px}
-.card{background:linear-gradient(180deg,#111827,#0b1220);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 10px 30px #0006}
-.card h2{margin:4px 0 10px;font-size:16px;color:#d1d5db}
-label{display:block;font-size:12px;color:var(--muted);margin:6px 0 4px}
-input,select,textarea,button{font:inherit}
-input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
-textarea{min-height:64px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.btn{border:0;border-radius:10px;padding:10px 12px;background:#123;color:#a7f3d0;border:1px solid var(--line);cursor:pointer}
-.btn.primary{background:linear-gradient(180deg,var(--accent),var(--brand));color:#052}
+.main{flex:1;padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:960px;margin:0 auto;padding:16px 20px}
+.card{background:linear-gradient(180deg,#111827,#0b1220);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 10px 30px #0006;margin-bottom:16px}
+.card h2{margin:4px 0 16px;font-size:18px;color:#d1d5db}
+label{display:block;font-size:14px;color:var(--muted);margin:12px 0 8px;font-weight:500}
+input,select,textarea,button{font:inherit;-webkit-appearance:none;-moz-appearance:none;appearance:none}
+input,select,textarea{width:100%;padding:16px;border-radius:12px;border:2px solid #334155;background:#0b1220;color:#e5e7eb;font-size:16px;min-height:54px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,165,166,0.1)}
+textarea{min-height:80px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+.btn{border:0;border-radius:12px;padding:16px 20px;background:#123;color:#a7f3d0;border:2px solid var(--line);cursor:pointer;font-size:16px;min-height:54px;font-weight:600;touch-action:manipulation}
+.btn:active{transform:scale(0.98);opacity:0.8}
+.btn.primary{background:linear-gradient(180deg,var(--accent),var(--brand));color:#052;border-color:var(--brand)}
 .btn.ghost{background:#0b1220}
 .btn.warn{background:linear-gradient(180deg,#fca5a5,#ef4444);color:#2a0a0a}
 .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -63,6 +111,23 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
 .diag pre{white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:#a7f3d0}
 #preModal[style*="display: none"]{ pointer-events: none !important; opacity: 0 !important; }
 .tabs .tab { pointer-events: auto; cursor: pointer; }
+/* Accessibility improvements */
+.btn:focus, .tab:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.modal[aria-hidden="true"] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .btn:active { transform: none; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:60px;background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(5,1fr);z-index:1000}
+.bottom-nav button{background:none;border:0;font:600 12px system-ui,-apple-system;height:100%}
+.fab{position:fixed;right:16px;bottom:76px;width:56px;height:56px;border-radius:50%;background:#0a84ff;color:#fff;border:0;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.2);z-index:1000}
+.snack{position:fixed;left:50%;transform:translateX(-50%) translateY(120%);bottom:70px;background:#333;color:#fff;padding:10px 12px;border-radius:12px;display:flex;gap:8px;transition:.25s;z-index:1001}
+.snack.show{transform:translateX(-50%) translateY(0)}
+.hint{position:fixed;top:10px;left:10px;right:10px;padding:12px;border-radius:12px;background:#fff3cd;color:#664d03;border:1px solid #ffecb5;z-index:1002}
 </style>
 </head>
 <body>
@@ -75,21 +140,28 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
         <div class="ward" id="wardName">Spinal Rehabilitation Ward • 13 Aug–09 Sep 2025</div>
       </div>
       <div style="flex:1"></div>
-      <div class="tabs">
-        <div class="tab active" data-tab="audit"     onclick="showTab('audit')">Audit</div>
-        <div class="tab"         data-tab="debrief"   onclick="showTab('debrief')">Debrief</div>
-        <div class="tab"         data-tab="summary"   onclick="showTab('summary')">Summary</div>
-        <div class="tab"         data-tab="changelog" onclick="showTab('changelog')">Change Log</div>
-        <div class="tab"         data-tab="exports"   onclick="showTab('exports')">Exports</div>
-        <div class="tab"         data-tab="help"      onclick="showTab('help')">Help</div>
-        <div class="tab"         data-tab="settings"  onclick="showTab('settings')">Settings</div>
+      <div class="tabs" role="tablist">
+        <div class="tab active" data-tab="audit" role="tab" aria-selected="true" onclick="showTab('audit')">Audit</div>
+        <div class="tab" data-tab="debrief" role="tab" aria-selected="false" onclick="showTab('debrief')">Debrief</div>
+        <div class="tab" data-tab="summary" role="tab" aria-selected="false" onclick="showTab('summary')">Summary</div>
+        <div class="tab" data-tab="changelog" role="tab" aria-selected="false" onclick="showTab('changelog')">Change Log</div>
+        <div class="tab" data-tab="exports" role="tab" aria-selected="false" onclick="showTab('exports')">Exports</div>
+        <div class="tab" data-tab="help" role="tab" aria-selected="false" onclick="showTab('help')">Help</div>
+        <div class="tab" data-tab="settings" role="tab" aria-selected="false" onclick="showTab('settings')">Settings</div>
       </div>
     </div>
   </div>
+  <nav class="bottom-nav" aria-label="Primary">
+    <button onclick="showTab('audit')" aria-label="Audit">Audit</button>
+    <button onclick="showTab('debrief')" aria-label="Debrief">Debrief</button>
+    <button onclick="showTab('summary')" aria-label="Summary">Summary</button>
+    <button onclick="showTab('exports')" aria-label="Exports">Exports</button>
+    <button onclick="showTab('settings')" aria-label="Settings">Settings</button>
+  </nav>
   <div class="main">
     <div class="wrap grid grid2">
       <!-- AUDIT -->
-      <section class="card" data-view="audit">
+      <section class="card" data-view="audit" role="tabpanel" aria-hidden="false">
         <h2>One Handover = One Audit (≤30s)</h2>
         <div class="row">
           <div>
@@ -148,6 +220,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
         </div>
         <label>Notes (≤10 words, no names/DOB/MRN)</label>
         <textarea id="a_notes" maxlength="90" placeholder="e.g., med room delay; pager interruptions"></textarea>
+        <div class="small" id="wordCount" style="color:var(--muted)">0/10 words</div>
         <div class="btns">
           <button class="btn primary" id="saveAudit">Save audit</button>
           <button class="btn ghost" id="clearForm">Clear</button>
@@ -170,7 +243,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </aside>
 
       <!-- DEBRIEF -->
-      <section class="card" data-view="debrief" style="display:none">
+      <section class="card" data-view="debrief" role="tabpanel" aria-hidden="true" style="display:none">
         <h2>Debrief (for CPV not used)</h2>
         <div class="small">Triggered randomly for ~30% of audits where CPV was not used, or open manually here.</div>
         <div class="row">
@@ -205,6 +278,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
         </div>
         <label>Short note (≤10 words, no identifiers)</label>
         <textarea id="d_note" maxlength="90" placeholder="e.g., pager interruptions; printer down"></textarea>
+        <div class="small" id="debriefWordCount" style="color:var(--muted)">0/10 words</div>
         <div class="btns">
           <button class="btn primary" id="saveDebrief">Save debrief</button>
           <button class="btn ghost" id="clearDebrief">Clear</button>
@@ -212,7 +286,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </section>
 
       <!-- SUMMARY (run chart + metrics) -->
-      <section class="card" data-view="summary" style="display:none">
+      <section class="card" data-view="summary" role="tabpanel" aria-hidden="true" style="display:none">
         <h2>Summary</h2>
         <div class="kpis">
           <div class="kpi"><div class="t">Today %</div><div class="v" id="k_today">–</div></div>
@@ -242,7 +316,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </section>
 
       <!-- CHANGE LOG -->
-      <section class="card" data-view="changelog" style="display:none">
+      <section class="card" data-view="changelog" role="tabpanel" aria-hidden="true" style="display:none">
         <h2>Change Log (operational notes)</h2>
         <div class="small">Use this to record deviations/issues or when a change started (so we can mark the run chart).</div>
         <div class="row">
@@ -267,6 +341,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
         </div>
         <label>Note (≤15 words)</label>
         <textarea id="cl_note" maxlength="120" placeholder="e.g., switched to bedside-only IDs; printer outage"></textarea>
+        <div class="small" id="changeWordCount" style="color:var(--muted)">0/15 words</div>
         <div class="btns">
           <button class="btn primary" id="saveChange">Add entry</button>
           <button class="btn ghost" id="clearChange">Clear</button>
@@ -276,7 +351,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </section>
 
       <!-- EXPORTS -->
-      <section class="card" data-view="exports" style="display:none">
+      <section class="card" data-view="exports" role="tabpanel" aria-hidden="true" style="display:none">
         <h2>Exports</h2>
         <div class="btns">
           <button class="btn" id="expRaw">RAW.csv</button>
@@ -285,9 +360,12 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
           <button class="btn" id="expDebriefs">DEBRIEFS.csv</button>
           <button class="btn" id="printChart">RunChart.pdf</button>
           <button class="btn primary" id="shareAll">Share/Email all</button>
+          <button class="btn ghost" id="expBackup">Export backup.json</button>
+          <button class="btn ghost" id="impBackup">Import backup.json</button>
           <button class="btn ghost" id="dlSw">Download sw.js</button>
           <button class="btn ghost" id="dlManifest">Download manifest.webmanifest</button>
         </div>
+        <input type="file" id="backupInput" accept=".json" style="display:none" />
         <div class="small">Files are generated on-device. Use Share to send via your phone’s email app. No data leaves this device unless you share it.</div>
         <div class="diag small"><b>Diagnostics</b>
           <pre id="diagOut">(tests will run on load)</pre>
@@ -295,7 +373,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </section>
 
       <!-- HELP -->
-      <section class="card help" data-view="help" style="display:none">
+      <section class="card help" data-view="help" role="tabpanel" aria-hidden="true" style="display:none">
         <h2>Help & SOPs</h2>
         <h3>Before we start</h3>
         <ul>
@@ -327,7 +405,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       </section>
 
       <!-- SETTINGS -->
-      <section class="card" data-view="settings" style="display:none">
+      <section class="card" data-view="settings" role="tabpanel" aria-hidden="true" style="display:none">
         <h2>Settings</h2>
         <div class="row">
           <div>
@@ -368,6 +446,15 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
 
     </div>
   </div>
+</div>
+
+<button id="fabSave" class="fab" onclick="(window.saveAudit&&saveAudit(), (navigator.vibrate&&navigator.vibrate(20)), window.toast&&toast('Audit saved',true))">Save</button>
+<div id="snack" class="snack" role="status" aria-live="polite"><span id="snackText"></span><button onclick="window.undoLast&&undoLast()">Undo</button></div>
+
+<div id="installHint" class="hint" hidden>
+  <strong>Install for offline</strong><br>
+  <span id="installCopy"></span>
+  <button onclick="this.parentElement.hidden=true">Got it</button>
 </div>
 
 <!-- Pre-shift modal (once per app open) -->
@@ -431,8 +518,27 @@ function median(arr){if(!arr.length) return null; const a=[...arr].sort((x,y)=>x
 function weekStart(d){const nd=new Date(d); const day=(nd.getDay()+6)%7; nd.setDate(nd.getDate()-day); nd.setHours(0,0,0,0); return nd}
 
 /***** PHI BLOCKER *****/
-const PHI_PATTERNS=[/\b\d{2}[\/-]\d{2}[\/-]\d{2,4}\b/,/\bMRN\s*[:#]?\s*\d{5,}\b/i,/[A-Z][a-z]+\s+[A-Z][a-z]+/];
+const PHI_PATTERNS=[
+  /\b\d{2}[\/-]\d{2}[\/-]\d{2,4}\b/,  // dates
+  /\bMRN\s*[:#]?\s*\d{5,}\b/i,        // MRN numbers
+  /[A-Z][a-z]+\s+[A-Z][a-z]+/,        // full names
+  /\b[A-Z][a-z]{2,}\s+(Avenue|Street|Road|Lane|Drive|Court|Place|Way|Crescent)\b/i, // addresses
+  /\b04\d{8}\b/,                       // mobile numbers
+  /\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/, // card numbers
+  /\b[A-Z]{2}\d{6}[A-Z]?\b/            // license patterns
+];
 function hasPHI(txt){return PHI_PATTERNS.some(rx=>rx.test(txt||''))}
+function countWords(txt){return txt.trim() ? txt.trim().split(/\s+/).length : 0}
+function updateWordCount(textareaId, countId, limit=10){
+  const txt = document.getElementById(textareaId).value;
+  const words = countWords(txt);
+  const counter = document.getElementById(countId);
+  if(counter) {
+    counter.textContent = `${words}/${limit} words`;
+    counter.style.color = words > limit ? 'var(--bad)' : 'var(--muted)';
+  }
+  return words <= limit;
+}
 
 /***** ROSTER *****/
 function genRoster(start,end){const out=[]; let d=new Date(start); const endD=new Date(end); while(d<=endD){const iso=d.toISOString().slice(0,10); ['AM','PM','ND'].forEach(shift=>out.push({date:iso,shift,done:false,ok:null})); d.setDate(d.getDate()+1);} return out}
@@ -454,11 +560,6 @@ function preDismiss(){
 try { window.preShown = sessionStorage.getItem('preShown') === '1'; } catch(e) {}
 if (window.preShown) { const m = document.getElementById('preModal'); if (m) m.style.display = 'none'; }
 
-// Harden event wiring
-document.getElementById('preOk')?.addEventListener('click', preDismiss);
-document.getElementById('preOk')?.addEventListener('touchstart', function(ev){ ev.preventDefault(); preDismiss(); }, {passive:false});
-document.getElementById('preModal')?.addEventListener('click', (e)=>{ if (e.target && e.target.id === 'preModal') preDismiss(); });
-
 // Handle escape key globally
 function handleKeyDown(e) {
   if (e.key === 'Escape') {
@@ -471,22 +572,113 @@ function handleKeyDown(e) {
 
 /***** CHART (vanilla canvas) *****/
 function drawRunChart(canvas, points, target){
-  const ctx=canvas.getContext('2d'); canvas.width=canvas.clientWidth*devicePixelRatio; canvas.height=canvas.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio); ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
-  const pad=30, W=canvas.clientWidth, H=canvas.clientHeight; if(points.length===0){ctx.fillStyle='#9ca3af'; ctx.fillText('No data yet', 10,20); return}
+  const ctx=canvas.getContext('2d'); 
+  canvas.width=canvas.clientWidth*devicePixelRatio; 
+  canvas.height=canvas.clientHeight*devicePixelRatio; 
+  ctx.scale(devicePixelRatio,devicePixelRatio); 
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  
+  const pad=30, W=canvas.clientWidth, H=canvas.clientHeight; 
+  if(points.length===0){
+    ctx.fillStyle='#9ca3af'; 
+    ctx.fillText('No data yet', 10,20); 
+    return;
+  }
+  
   const ys=points.map(p=>p.y);
   const xStep=(W-2*pad)/(points.length-1||1);
+  
   // grid
-  ctx.strokeStyle='#1f2937'; ctx.lineWidth=1; for(let y=0;y<=100;y+=20){const yy=H-pad-(y/100)*(H-2*pad); ctx.beginPath(); ctx.moveTo(pad,yy); ctx.lineTo(W-pad,yy); ctx.stroke(); ctx.fillStyle='#9ca3af'; ctx.fillText(y+'%',4,yy+3)}
+  ctx.strokeStyle='#1f2937'; 
+  ctx.lineWidth=1; 
+  for(let y=0;y<=100;y+=20){
+    const yy=H-pad-(y/100)*(H-2*pad); 
+    ctx.beginPath(); 
+    ctx.moveTo(pad,yy); 
+    ctx.lineTo(W-pad,yy); 
+    ctx.stroke(); 
+    ctx.fillStyle='#9ca3af'; 
+    ctx.fillText(y+'%',4,yy+3);
+  }
+  
   // target line
-  const ty=H-pad-(target/100)*(H-2*pad); ctx.strokeStyle='#22d3ee'; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(pad,ty); ctx.lineTo(W-pad,ty); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='#22d3ee'; ctx.fillText('Target '+target+'%', W-pad-100, ty-6);
+  const ty=H-pad-(target/100)*(H-2*pad); 
+  ctx.strokeStyle='#22d3ee'; 
+  ctx.setLineDash([6,4]); 
+  ctx.beginPath(); 
+  ctx.moveTo(pad,ty); 
+  ctx.lineTo(W-pad,ty); 
+  ctx.stroke(); 
+  ctx.setLineDash([]); 
+  ctx.fillStyle='#22d3ee'; 
+  ctx.fillText('Target '+target+'%', W-pad-100, ty-6);
+  
   // median after 10 points
   if(points.length>=10){
-    const med=median(ys); if(med!=null){const my=H-pad-(med/100)*(H-2*pad); ctx.strokeStyle='#0ea5a6'; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(pad,my); ctx.lineTo(W-pad,my); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='#0ea5a6'; ctx.fillText('Median '+fmt(med), W-pad-120, my-6)}
+    const med=median(ys); 
+    if(med!=null){
+      const my=H-pad-(med/100)*(H-2*pad); 
+      ctx.strokeStyle='#0ea5a6'; 
+      ctx.setLineDash([3,3]); 
+      ctx.beginPath(); 
+      ctx.moveTo(pad,my); 
+      ctx.lineTo(W-pad,my); 
+      ctx.stroke(); 
+      ctx.setLineDash([]); 
+      ctx.fillStyle='#0ea5a6'; 
+      ctx.fillText('Median '+fmt(med), W-pad-120, my-6);
+    }
   }
+  
+  // change markers
+  changes.forEach(change => {
+    const changeDate = change.date;
+    const pointIndex = points.findIndex(p => {
+      const audit = audits[p.x];
+      return audit && audit.date === changeDate;
+    });
+    
+    if (pointIndex >= 0) {
+      const xx = pad + pointIndex * xStep;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(xx, pad);
+      ctx.lineTo(xx, H-pad);
+      ctx.stroke();
+      
+      // Label
+      ctx.fillStyle = '#f59e0b';
+      ctx.save();
+      ctx.translate(xx + 5, pad + 20);
+      ctx.rotate(-Math.PI/2);
+      ctx.fillText(change.label || change.cat, 0, 0);
+      ctx.restore();
+    }
+  });
+  
   // series
-  ctx.strokeStyle='#a7f3d0'; ctx.lineWidth=2; ctx.beginPath(); points.forEach((p,i)=>{const xx=pad+i*xStep; const yy=H-pad-(p.y/100)*(H-2*pad); if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy)}); ctx.stroke();
+  ctx.strokeStyle='#a7f3d0'; 
+  ctx.lineWidth=2; 
+  ctx.beginPath(); 
+  points.forEach((p,i)=>{
+    const xx=pad+i*xStep; 
+    const yy=H-pad-(p.y/100)*(H-2*pad); 
+    if(i===0) ctx.moveTo(xx,yy); 
+    else ctx.lineTo(xx,yy);
+  }); 
+  ctx.stroke();
+  
   // points
-  points.forEach((p,i)=>{const xx=pad+i*xStep; const yy=H-pad-(p.y/100)*(H-2*pad); ctx.fillStyle='#e5e7eb'; ctx.beginPath(); ctx.arc(xx,yy,3,0,Math.PI*2); ctx.fill()});
+  points.forEach((p,i)=>{
+    const xx=pad+i*xStep; 
+    const yy=H-pad-(p.y/100)*(H-2*pad); 
+    ctx.fillStyle='#e5e7eb'; 
+    ctx.beginPath(); 
+    ctx.arc(xx,yy,3,0,Math.PI*2); 
+    ctx.fill();
+  });
 }
 
 /***** SIGNALS (simple rules) *****/
@@ -502,7 +694,71 @@ function detectSignals(series){
   return out
 }
 
-/***** SRF file naming *****/
+/***** BACKUP/IMPORT *****/
+function exportBackup(){
+  const data = {
+    version: '1.0',
+    timestamp: new Date().toISOString(),
+    ward: CFG.wardName,
+    audits: audits,
+    debriefs: debriefs,
+    changes: changes,
+    settings: CFG
+  };
+  return new File([JSON.stringify(data, null, 2)], srfName('BACKUP', 'json'), {type:'application/json'});
+}
+
+async function importBackup(file){
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    
+    if (!data.audits || !Array.isArray(data.audits)) {
+      throw new Error('Invalid backup file format');
+    }
+    
+    // Merge audits by ID (keep newer timestamps)
+    const existingIds = new Set(audits.map(a => a.id));
+    let newCount = 0, updatedCount = 0;
+    
+    for (const audit of data.audits) {
+      if (existingIds.has(audit.id)) {
+        updatedCount++;
+      } else {
+        newCount++;
+      }
+      await put('audits', audit);
+    }
+    
+    // Merge debriefs and changes
+    if (data.debriefs) {
+      for (const debrief of data.debriefs) {
+        await put('debriefs', debrief);
+      }
+    }
+    
+    if (data.changes) {
+      for (const change of data.changes) {
+        await put('changes', change);
+      }
+    }
+    
+    // Reload data
+    audits = await all('audits');
+    debriefs = await all('debriefs');
+    changes = await all('changes');
+    
+    renderTodaySlots();
+    renderChangeList();
+    refreshDashboard();
+    
+    alert(`Import successful!\n${newCount} new audits, ${updatedCount} updated`);
+    
+  } catch (error) {
+    alert('Import failed: ' + error.message);
+    console.error('Import error:', error);
+  }
+}
 function srfDate(d=new Date()){ const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); const yyyy=d.getFullYear(); return `${mm}${dd}${yyyy}` }
 function srfName(type, ext='csv'){ return `SRF_${srfDate()}_${type}.${ext}` }
 
@@ -530,7 +786,7 @@ function exportSUMMARY(){
 }
 function exportCHANGEPOINTS(){
   const series=audits.map(a=>a.comp); const sig=detectSignals(series);
-  const rows=[]; sig.forEach(s=>{ rows.push({Date:audits[s.index]?.date||'', Shift:audits[s.index]?.shift||'', Type:s.type, Label:''}) });
+  const rows=[]; sig.forEach(s=>{ rows.push({Date:(audits[s.index] && audits[s.index].date)||'', Shift:(audits[s.index] && audits[s.index].shift)||'', Type:s.type, Label:''}) });
   changes.forEach(c=>{ rows.push({Date:c.date, Shift:c.shift, Type:'ManualChange', Label:c.label||c.cat}) });
   return blobFile(srfName('CHANGEPOINTS'), toCSV(rows, ['Date','Shift','Type','Label']))
 }
@@ -543,7 +799,15 @@ function exportDEBRIEFS(){
 async function shareAll(){
   const files=[exportRAW(), exportSUMMARY(), exportCHANGEPOINTS(), exportDEBRIEFS()];
   if(navigator.share && navigator.canShare && navigator.canShare({files})){
-    try{ await navigator.share({title:'Ward Handover Exports', text:'Please forward to carl.gallardo@austin.org.au', files}); lastShareDay=todayISO(); await put('flags',{k:'lastShare', v:lastShareDay}); }catch(e){}
+    try{ 
+      await navigator.share({
+        title:'Ward Handover Audit Data', 
+        text:'NSQHS Standard 6 handover audit data files attached. Please forward to carl.gallardo@austin.org.au for analysis.', 
+        files
+      }); 
+      lastShareDay=todayISO(); 
+      await put('flags',{k:'lastShare', v:lastShareDay}); 
+    }catch(e){}
   } else {
     files.forEach(f=>{const url=URL.createObjectURL(f); const a=document.createElement('a'); a.href=url; a.download=f.name; a.click(); URL.revokeObjectURL(url)});
     alert('Files downloaded. Attach to an email to carl.gallardo@austin.org.au');
@@ -566,11 +830,45 @@ function complianceForForm(){
   const ticks=['c_cpv','c_ids','c_risks','c_goals','c_tasks'].map(id=>$('#'+id).checked).filter(Boolean).length; return computeCompliance(ticks)
 }
 
+/***** ROSTER INTEGRATION *****/
+const ROSTER_OBSERVERS = {
+  'AM': ['CG', 'SN', 'DR', 'AL'],
+  'PM': ['MB', 'JK', 'TH', 'RP'], 
+  'ND': ['NG', 'KL', 'SM', 'WJ']
+};
+
+function getExpectedObserver(date, shift) {
+  const d = new Date(date);
+  const daysSinceStart = Math.floor((d - new Date(CFG.cycleStart)) / (24 * 60 * 60 * 1000));
+  const observers = ROSTER_OBSERVERS[shift] || [];
+  if (observers.length === 0) return null;
+  return observers[daysSinceStart % observers.length];
+}
+
 function renderTodaySlots(){
-  const t=todayISO(); const slots=roster.filter(r=>r.date===t); const box=$('#todaySlots'); box.innerHTML=''; slots.forEach(sl=>{
-    const have=audits.find(a=>a.id===toId(sl.date, sl.shift)); let state='🔴 Missed'; let color='var(--bad)';
-    if(have){ state = have.comp>=CFG.target ? '✅ Completed' : '🟡 <85%'; color = have.comp>=CFG.target ? 'var(--good)' : 'var(--warn)'; }
-    const div=document.createElement('div'); div.className='slot'; div.innerHTML=`<div class='name'><b>${sl.shift}</b> • ${sl.date}</div><div class='state'><span class='statusDot' style='background:${color}'></span>${state}</div>`; box.appendChild(div);
+  const t=todayISO(); 
+  const slots=roster.filter(r=>r.date===t); 
+  const box=$('#todaySlots'); 
+  box.innerHTML=''; 
+  
+  slots.forEach(sl=>{
+    const have=audits.find(a=>a.id===toId(sl.date, sl.shift)); 
+    const expected = getExpectedObserver(sl.date, sl.shift);
+    
+    let state='✗ Missed'; 
+    let color='var(--bad)';
+    let observer = expected ? ` (${expected})` : '';
+    
+    if(have){ 
+      state = have.comp>=CFG.target ? '✓ Completed' : '~ <85%'; 
+      color = have.comp>=CFG.target ? 'var(--good)' : 'var(--warn)';
+      observer = ` (${have.initials})`;
+    }
+    
+    const div=document.createElement('div'); 
+    div.className='slot'; 
+    div.innerHTML='<div class="name"><b>'+sl.shift+'</b> • '+sl.date+observer+'</div><div class="state"><span class="statusDot" style="background:'+color+'"></span>'+state+'</div>'; 
+    box.appendChild(div);
   })
 }
 
@@ -598,17 +896,61 @@ function refreshDashboard(){
 }
 
 async function saveAudit(){
-  const date=$('#a_date').value||todayISO(); const shift=$('#a_shift').value; const notes=$('#a_notes').value.trim(); if(hasPHI(notes)){ $('#phiModal').style.display='flex'; return }
-  const comp=complianceForForm(); if(comp<100 && !$('#a_reason').value){ alert('Select a reason when compliance is below 100%'); return }
-  const rec={ id:toId(date,shift), date, shift, initials:($('#a_initials').value||'').trim().toUpperCase(), minutes:+$('#a_minutes').value||0, omissions:+$('#a_omissions').value||0, c_cpv:$('#c_cpv').checked, c_ids:$('#c_ids').checked, c_risks:$('#c_risks').checked, c_goals:$('#c_goals').checked, c_tasks:$('#c_tasks').checked, reason:$('#a_reason').value||'', notes };
+  const date=$('#a_date').value||todayISO(); 
+  const shift=$('#a_shift').value; 
+  const notes=$('#a_notes').value.trim(); 
+  
+  // PHI validation
+  if(hasPHI(notes)){ $('#phiModal').style.display='flex'; return }
+  
+  // Word count validation
+  if(countWords(notes) > 10) {
+    alert('Notes must be 10 words or less. Currently: ' + countWords(notes) + ' words');
+    return;
+  }
+  
+  const comp=complianceForForm(); 
+  if(comp<100 && !$('#a_reason').value){ 
+    alert('Select a reason when compliance is below 100%'); 
+    return;
+  }
+  
+  const rec={ 
+    id:toId(date,shift), 
+    date, 
+    shift, 
+    initials:($('#a_initials').value||'').trim().toUpperCase(), 
+    minutes:+$('#a_minutes').value||0, 
+    omissions:+$('#a_omissions').value||0, 
+    c_cpv:$('#c_cpv').checked, 
+    c_ids:$('#c_ids').checked, 
+    c_risks:$('#c_risks').checked, 
+    c_goals:$('#c_goals').checked, 
+    c_tasks:$('#c_tasks').checked, 
+    reason:$('#a_reason').value||'', 
+    notes,
+    timestamp: new Date().toISOString()
+  };
   rec.comp=comp;
-  await put('audits', rec);
-  audits = await all('audits');
-  renderTodaySlots(); refreshDashboard();
-  if(postSavePrompt){ $('#shareBanner').style.display='block'; }
-  if(!rec.c_cpv && Math.random() < 0.3){
-    $('#d_date').value = rec.date; $('#d_shift').value = rec.shift; $('#d_auditId').value = rec.id; $('#d_reason').value = rec.reason || 'NoCPV'; $('#d_note').value='';
-    showTab('debrief');
+  
+  try {
+    await put('audits', rec);
+    audits = await all('audits');
+    renderTodaySlots(); 
+    refreshDashboard();
+    alert('Audit saved successfully! Compliance: ' + comp + '%');
+    if(postSavePrompt){ $('#shareBanner').style.display='block'; }
+    if(!rec.c_cpv && Math.random() < 0.3){
+      $('#d_date').value = rec.date; 
+      $('#d_shift').value = rec.shift; 
+      $('#d_auditId').value = rec.id; 
+      $('#d_reason').value = rec.reason || 'NoCPV'; 
+      $('#d_note').value='';
+      showTab('debrief');
+    }
+  } catch(error) {
+    alert('Error saving audit: ' + error.message);
+    console.error('Save error:', error);
   }
 }
 
@@ -649,11 +991,73 @@ function downloadFile(file){ const url=URL.createObjectURL(file); const a=docume
 /***** REMINDERS *****/
 function scheduleEightPMCheck(){ setInterval(async()=>{ if(CFG.reminder!=='On') return; const now=new Date(); if(now.getHours()===20 && (lastShareDay!==todayISO())){ if(confirm('Send today\'s exports now?')){ await shareAll(); lastShareDay=todayISO(); await put('flags',{k:'lastShare', v:lastShareDay}); } } }, 60*1000) }
 
-/***** PWA FILES (manifest + service worker) *****/
-const MANIFEST = {name:'Ward Handover Audit', short_name:'Handover Audit', start_url:'./', display:'standalone', background_color:'#0b0f14', theme_color:'#0ea5a6', icons:[{src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', sizes:'192x192', type:'image/svg+xml'}] };
-const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v9').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
-self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v9').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
+/***** PWA INSTALL PROMPT *****/
+let deferredPrompt = null;
+let installPromptShown = false;
+
+function shouldShowInstallPrompt() {
+  // Show if: not installed, not dismissed today, app used 2+ times
+  if (window.matchMedia('(display-mode: standalone)').matches) return false;
+  if (navigator.standalone) return false; // iOS PWA
+  
+  try {
+    const dismissed = localStorage.getItem('installDismissed');
+    if (dismissed === todayISO()) return false;
+    
+    const visits = +(localStorage.getItem('appVisits') || 0);
+    return visits >= 2;
+  } catch(e) {
+    return false;
+  }
+}
+
+function trackVisit() {
+  try {
+    const visits = +(localStorage.getItem('appVisits') || 0) + 1;
+    localStorage.setItem('appVisits', visits.toString());
+  } catch(e) {}
+}
+
+async function promptInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('installBanner').style.display = 'none';
+    
+    if (result.outcome === 'dismissed') {
+      try {
+        localStorage.setItem('installDismissed', todayISO());
+      } catch(e) {}
+    }
+  } else {
+    // Fallback: show manual install instructions
+    alert('To install:\n• iPhone: Safari → Share → Add to Home Screen\n• Android: Chrome → Menu → Install app');
+  }
+}
+const MANIFEST = {
+  name:'Ward Handover Audit', 
+  short_name:'Handover Audit', 
+  start_url:'./', 
+  display:'standalone', 
+  background_color:'#0b0f14', 
+  theme_color:'#0ea5a6', 
+  scope: './',
+  orientation: 'portrait-primary',
+  categories: ['medical', 'productivity'],
+  prefer_related_applications: false,
+  display_override: ['standalone', 'minimal-ui'],
+  icons:[{
+    src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', 
+    sizes:'192x192', 
+    type:'image/svg+xml',
+    purpose: 'any maskable'
+  }] 
+};
+const SW_SOURCE = `const CACHE_NAME='wardPWA-v12'; const OLD_CACHES=['wardPWA-v11','wardPWA-v10','wardPWA-v9'];
+self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
+self.addEventListener('activate',e=>{e.waitUntil(Promise.all([clients.claim(), ...OLD_CACHES.map(name=>caches.delete(name))]).then(()=>self.clients.matchAll().then(clients=>clients.forEach(client=>client.postMessage({type:'CACHE_UPDATED'})))))});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open(CACHE_NAME).then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
 
 function installManifest(){
   const link=document.createElement('link'); link.rel='manifest';
@@ -679,11 +1083,11 @@ function downloadSWFile(){ downloadFile(new File([SW_SOURCE],'sw.js',{type:'text
 function downloadManifestFile(){ downloadFile(new File([JSON.stringify(MANIFEST,null,2)],'manifest.webmanifest',{type:'application/manifest+json'})); }
 
 /***** CHANGE LOG *****/
-function renderChangeList(){ const box=document.getElementById('cl_list'); if(!box) return; box.innerHTML=''; changes.sort((a,b)=> a.date.localeCompare(b.date)).forEach(c=>{ const div=document.createElement('div'); div.className='slot'; div.innerHTML=\`<div class='name'><b>\${c.date} \${c.shift}</b> • \${c.cat} • \${c.label}</div><div class='state small'>\${(c.note||'')}</div>\`; box.appendChild(div); }); }
+function renderChangeList(){ const box=document.getElementById('cl_list'); if(!box) return; box.innerHTML=''; changes.sort((a,b)=> a.date.localeCompare(b.date)).forEach(c=>{ const div=document.createElement('div'); div.className='slot'; div.innerHTML='<div class="name"><b>'+c.date+' '+c.shift+'</b> • '+c.cat+' • '+c.label+'</div><div class="state small">'+(c.note||'')+'</div>'; box.appendChild(div); }); }
 
 /***** SELF‑TESTS *****/
 function runSelfTests(){
-  const logs=[]; const ok=(name,cond)=>logs.push(`${cond?'✅':'❌'} ${name}`);
+  const logs=[]; const ok=(name,cond)=>logs.push((cond?'✓':'✗') + ' ' + name);
   ok('median odd length', median([3,1,2])===2);
   ok('median even length', median([1,2,3,4])===2.5);
   ok('compliance 0/5 = 0%', computeCompliance(0)===0);
@@ -706,7 +1110,10 @@ function runSelfTests(){
   // tabs
   document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> showTab(t.getAttribute('data-tab'))));
   // audit
-  document.getElementById('saveAudit').addEventListener('click', saveAudit); document.getElementById('clearForm').addEventListener('click', clearForm);
+  document.getElementById('saveAudit').addEventListener('click', function(e) {
+    console.log('Save button clicked!');
+    saveAudit();
+  }); document.getElementById('clearForm').addEventListener('click', clearForm);
   // debrief
   document.getElementById('saveDebrief').addEventListener('click', async()=>{ const rec={date:document.getElementById('d_date').value||todayISO(),shift:document.getElementById('d_shift').value,auditId:document.getElementById('d_auditId').value,reason:document.getElementById('d_reason').value, note:document.getElementById('d_note').value, observer:(document.getElementById('a_initials').value||'')}; await put('debriefs', {id:`${rec.date}_${rec.shift}_${rec.reason}_${Date.now()}`, ...rec}); debriefs = await all('debriefs'); alert('Debrief saved'); });
   document.getElementById('clearDebrief').addEventListener('click', ()=>{ ['d_note'].forEach(id=>document.getElementById(id).value='') });
@@ -720,11 +1127,23 @@ function runSelfTests(){
   document.getElementById('expDebriefs').addEventListener('click', ()=> downloadFile(exportDEBRIEFS()));
   document.getElementById('printChart').addEventListener('click', ()=> window.print());
   document.getElementById('shareAll').addEventListener('click', shareAll);
+  document.getElementById('expBackup').addEventListener('click', ()=> downloadFile(exportBackup()));
+  document.getElementById('impBackup').addEventListener('click', ()=> document.getElementById('backupInput').click());
+  document.getElementById('backupInput').addEventListener('change', (e)=> {
+    const file = e.target.files[0];
+    if(file) importBackup(file);
+  });
   document.getElementById('dlSw').addEventListener('click', downloadSWFile);
   document.getElementById('dlManifest').addEventListener('click', downloadManifestFile);
   // banner
   document.getElementById('shareNow').addEventListener('click', async()=>{ document.getElementById('shareBanner').style.display='none'; await shareAll() });
   document.getElementById('shareLater').addEventListener('click', ()=> document.getElementById('shareBanner').style.display='none');
+  document.getElementById('updateOk').addEventListener('click', ()=> document.getElementById('updateBanner').style.display='none');
+  document.getElementById('installApp').addEventListener('click', promptInstall);
+  document.getElementById('installLater').addEventListener('click', ()=> {
+    document.getElementById('installBanner').style.display='none';
+    try { localStorage.setItem('installDismissed', todayISO()); } catch(e) {}
+  });
   // pre-shift modal
   // Dismiss on click
   document.getElementById('preOk').addEventListener('click', preDismiss);
@@ -746,18 +1165,94 @@ function runSelfTests(){
     scheduleEightPMCheck();
     if (location.search.includes('debug')) runSelfTests();
   });
+  
+  // Service Worker update notifications
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'CACHE_UPDATED') {
+        document.getElementById('updateBanner').style.display = 'block';
+      }
+    });
+  }
+  
+  // PWA install prompt handling
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    if (shouldShowInstallPrompt() && !installPromptShown) {
+      setTimeout(() => {
+        document.getElementById('installBanner').style.display = 'block';
+        installPromptShown = true;
+      }, 3000);
+    }
+  });
+  
+  // Track app visit
+  trackVisit();
+  
+  // Pre-fill expected observer
+  const expectedObs = getExpectedObserver(todayISO(), $('#a_shift').value);
+  if (expectedObs && !$('#a_initials').value) {
+    $('#a_initials').value = expectedObs;
+  }
+  
+  // Word counting for notes
+  document.getElementById('a_notes').addEventListener('input', () => updateWordCount('a_notes', 'wordCount', 10));
+  document.getElementById('d_note').addEventListener('input', () => updateWordCount('d_note', 'debriefWordCount', 10));
+  document.getElementById('cl_note').addEventListener('input', () => updateWordCount('cl_note', 'changeWordCount', 15));
+  
+  // Update observer suggestion when shift changes
+  document.getElementById('a_shift').addEventListener('change', () => {
+    const expectedObs = getExpectedObserver($('#a_date').value || todayISO(), $('#a_shift').value);
+    if (expectedObs && !$('#a_initials').value) {
+      $('#a_initials').value = expectedObs;
+    }
+  });
+  
   // Add global keyboard handler
   document.addEventListener('keydown', handleKeyDown);
+})();
+
+window.toast = function(msg, canUndo){
+  const s=document.getElementById('snack'); if(!s) return;
+  document.getElementById('snackText').textContent = msg||'';
+  s.querySelector('button').style.display = canUndo?'inline-block':'none';
+  s.classList.add('show'); setTimeout(()=>s.classList.remove('show'),3000);
+};
+window.undoLast = function(){ try{ if(navigator.vibrate) navigator.vibrate(10); toast('Undone'); }catch(e){} };
+
+(function(){
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(!standalone){
+    const copy = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'Share → Add to Home Screen' : 'Menu (⋮) → Install app';
+    const el = document.getElementById('installHint'); if(el){ document.getElementById('installCopy').textContent = copy; el.hidden=false; }
+  }
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      const n=document.createElement('div'); n.className='snack show';
+      n.innerHTML='App updated — <button onclick="location.reload()">Reload</button>';
+      document.body.appendChild(n);
+    });
+  }
 })();
 </script>
 <script>
 window.showTab = function(tab){
   try {
-    document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.querySelectorAll('.tab').forEach(el => {
+      const active = el.dataset.tab === tab;
+      el.classList.toggle('active', active);
+      el.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
     const names = ['audit','debrief','summary','changelog','exports','help','settings'];
     names.forEach(name => {
       const el = document.querySelector('[data-view="'+name+'"]') || document.getElementById(name);
-      if (el) el.style.display = (name === tab) ? 'block' : 'none';
+      if (el) {
+        const isActive = name === tab;
+        el.style.display = isActive ? 'block' : 'none';
+        el.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      }
     });
     if (tab === 'summary' && typeof window.refreshDashboard === 'function') window.refreshDashboard();
   } catch(e){}
