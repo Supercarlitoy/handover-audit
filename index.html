@@ -379,7 +379,7 @@ canvas.run{width:100%!important;height:300px!important;background:#08111e;border
       <li>Notes ≤10 words; no names, DOB, MRN.</li>
       <li>Save within 30 seconds.</li>
     </ul>
-    <div class="btns" style="margin-top:10px"><button class="btn primary" id="preOk">Got it</button></div>
+    <div class="btns" style="margin-top:10px"><button class="btn primary" id="preOk" onclick="preDismiss()" role="button" tabindex="0">Got it</button></div>
   </div>
 </div>
 
@@ -437,6 +437,17 @@ function genRoster(start,end){const out=[]; let d=new Date(start); const endD=ne
 
 /***** STATE *****/
 let roster=[]; let audits=[]; let postSavePrompt=true; let lastShareDay=null; let debriefs=[]; let changes=[]; let preShown=false;
+try { preShown = sessionStorage.getItem('preShown') === '1'; } catch(e) {}
+if (preShown) { const m = document.getElementById('preModal'); if (m) m.style.display = 'none'; }
+
+/***** PRE-SHIFT MODAL DISMISS *****/
+function preDismiss(){
+  const m = document.getElementById('preModal');
+  if (m) m.style.display = 'none';
+  preShown = true;
+  try { sessionStorage.setItem('preShown','1'); } catch(e) {}
+  showTab('audit');
+}
 
 /***** CHART (vanilla canvas) *****/
 function drawRunChart(canvas, points, target){
@@ -609,9 +620,9 @@ function scheduleEightPMCheck(){ setInterval(async()=>{ if(CFG.reminder!=='On') 
 
 /***** PWA FILES (manifest + service worker) *****/
 const MANIFEST = {name:'Ward Handover Audit', short_name:'Handover Audit', start_url:'./', display:'standalone', background_color:'#0b0f14', theme_color:'#0ea5a6', icons:[{src:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22192%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%230ea5a6%22/%3E%3Ctext x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2296%22 font-family=%22system-ui%22 fill=%22white%22%3E%E2%9C%93%3C/text%3E%3C/svg%3E', sizes:'192x192', type:'image/svg+xml'}] };
-const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v1').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
+const SW_SOURCE = `self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v2').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))});
 self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v1').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v2').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})`;
 
 function installManifest(){
   const link=document.createElement('link'); link.rel='manifest';
@@ -683,7 +694,16 @@ function runSelfTests(){
   document.getElementById('shareNow').addEventListener('click', async()=>{ document.getElementById('shareBanner').style.display='none'; await shareAll() });
   document.getElementById('shareLater').addEventListener('click', ()=> document.getElementById('shareBanner').style.display='none');
   // pre-shift modal
-  document.getElementById('preOk').addEventListener('click', ()=>{ document.getElementById('preModal').style.display='none'; preShown=true; showTab('audit'); });
+  // Dismiss on click
+  document.getElementById('preOk').addEventListener('click', preDismiss);
+  // iOS sometimes swallows click on overlays; add touchstart
+  document.getElementById('preOk').addEventListener('touchstart', function(ev){
+    ev.preventDefault(); preDismiss();
+  }, {passive:false});
+  // Tap outside the dialog closes it too
+  document.getElementById('preModal').addEventListener('click', (e)=>{
+    if (e.target && e.target.id === 'preModal') preDismiss();
+  });
   // PHI modal
   document.getElementById('phiOk').addEventListener('click', ()=> document.getElementById('phiModal').style.display='none');
   // reminders + PWA

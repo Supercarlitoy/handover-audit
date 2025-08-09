@@ -1,3 +1,3 @@
-self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v1').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))}); 
+self.addEventListener('install',e=>{self.skipWaiting(); e.waitUntil(caches.open('wardPWA-v2').then(c=>c.addAll(['./','./index.html','./sw.js','./manifest.webmanifest'])))}); 
 self.addEventListener('activate',e=>{e.waitUntil(clients.claim())}); 
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v1').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone(); caches.open('wardPWA-v2').then(c=>c.put(e.request,copy)).catch(()=>{}); return resp}).catch(()=>r)))})
